@@ -14,9 +14,8 @@
       xmlns="http://javafx.com/javafx/11.0.1">
 
     <Label fx:id="instructionLabel" styleClass="instruction-area"/>
-    <HBox spacing="20" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
-        <VueJoueurActif fx:id="panneauDuJoueurActif"/>
-        <VueAdversaire fx:id="vueAdversaire"/>
-    </HBox>
+    <!-- HBox removed, VueJoueurActif and VueAdversaire are now direct children of the root VBox -->
+    <VueJoueurActif fx:id="panneauDuJoueurActif" VBox.vgrow="ALWAYS"/>
+    <VueAdversaire fx:id="vueAdversaire" VBox.vgrow="ALWAYS"/>
 
 </fx:root>

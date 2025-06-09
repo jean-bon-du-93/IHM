@@ -7,88 +7,79 @@ This document describes the expected user interface when `PokemonTCGIHM.java` is
 *   The main application window will be titled **"PokemonTCG"**.
 *   Its size will be dynamically set to 65% of the primary screen's width and height.
 *   The content of the window is primarily the `VueDuJeu` component.
-*   The main game view (`VueDuJeu`) has padding around its edges for better spacing.
+*   The main game view (`VueDuJeu`) has padding around its edges for better spacing (`game-view-root-padding` class).
 
 ## `VueDuJeu` Component (Main Game Area):
 
-This component is a `VBox` (vertical layout) providing the main game interface. It is styled with the `game-view-root-padding` class.
+This component is a `VBox` (vertical layout) providing the main game interface. Its root VBox is styled with `game-view-root-padding` and has a spacing of 15px between its direct children.
 
 *   **Top Element**:
     *   A `Label` (`instructionLabel`) displaying the current game instruction (e.g., "Choose a Pokémon to be active", "Player John's turn").
     *   Styled by `instruction-area`: This gives it a light gray background, padding, a bottom border, and an 18px font size, making it a distinct instruction bar.
-*   **Middle Element**:
-    *   An `HBox` (horizontal layout) containing two main sections, side-by-side, with 20px spacing between them. This `HBox` is configured to grow vertically (`VBox.vgrow="ALWAYS"`), taking up the available space below the instruction label.
-        *   **Left Side**: The `VueJoueurActif` component (active player's view).
-        *   **Right Side**: The `VueAdversaire` component (opponent's view).
+*   **Player's View Area**:
+    *   The `VueJoueurActif` component (`panneauDuJoueurActif`). This component is configured to grow vertically (`VBox.vgrow="ALWAYS"`), taking up a significant portion of the available space. It is displayed directly below the instruction label.
+*   **Opponent's View Area**:
+    *   The `VueAdversaire` component (`vueAdversaire`). This component is displayed below `VueJoueurActif` and is also configured to grow vertically (`VBox.vgrow="ALWAYS"`), sharing space with the player's view.
 
-## `VueJoueurActif` Component (Active Player's View - Left Side):
+## `VueJoueurActif` Component (Active Player's View):
 
-This component is a `VBox` with 10px internal spacing, styled with the `player-area` class, giving it a light blue background, padding, and a rounded border. Text elements generally use an 18px font.
+This component is a `VBox` with 10px internal spacing, styled with the `player-area` class (light blue background, padding, rounded border). Text elements generally use an 18px font.
 
 *   **Elements (Top to Bottom):**
-    1.  **Player Name (`nomDuJoueurLabel`)**: `Label` showing the active player's name (e.g., "John"), styled with `text-18px`.
-    2.  **Active Pokémon (`pokemonActifButton`)**: `Button`.
-        *   Styled with `card-button` and `text-18px`: Appears card-like with a border, white background, fixed size, and 18px font.
-        *   Text: Name of the active Pokémon (e.g., "Charizard") or "Aucun Pokémon actif".
-        *   Action: Prints a debug message to console.
-    3.  **Active Pokémon's Energy (`energiePokemonActifHBox`)**: `HBox` below the active Pokémon button (spacing 2px, alignment `CENTER_LEFT`).
-        *   Displays `Label`s for each energy type and count, styled with `energy-tag`: chip-like appearance with a light gray background, border, and rounded corners.
-        *   Dynamically updates with energy changes.
-    4.  **Hand (`panneauMainHBox`)**: `HBox` with 5px spacing.
-        *   Contains `Button`s for each card in the player's hand.
-        *   Hand card buttons are styled with `card-button` and `text-18px` (border, white background, fixed size, 18px font).
-        *   Button text: Card name.
-        *   Action: Notifies game logic (`jeu.uneCarteDeLaMainAEteChoisie(carte.getId())`).
-        *   Dynamically updates with hand changes.
-    5.  **Bench (`panneauBancHBox`)**: Centered `HBox` with 5px spacing.
-        *   Always displays 5 slots.
-        *   **Occupied Slots**: Display a `VBox` for each benched Pokémon, styled with `pokemon-node-display` (card-like with border, white background, fixed width). This `VBox` contains:
-            *   A `Button` with the benched Pokémon's name, styled with `card-button` and `text-18px`. Clicking it prints a debug message.
-            *   An `HBox` below the button, displaying `Label`s for attached energy, styled with `energy-tag`.
-        *   **Empty Slots**: Display a `Button` styled with `empty-bench-slot`: placeholder look with a light gray dashed border, specific background, smaller text, and fixed size.
-            *   Action: Clicking an empty slot button notifies the game logic (`jeu.unEmplacementVideDuBancAEteChoisi(String.valueOf(slotIndex))`).
-        *   The entire bench area updates when Pokémon are added to or removed from the bench (triggering a full reconstruction of the 5 slots).
+    1.  **Player Name (`nomDuJoueurLabel`)**: `Label` showing the active player's name, styled with `text-18px`.
+    2.  **Active Pokémon (`pokemonActifButton`)**: `Button`, styled with `card-button` and `text-18px` (card-like appearance).
+        *   Text: Name of the active Pokémon or "Aucun Pokémon actif".
+        *   Action: Prints a debug message.
+    3.  **Active Pokémon's Energy (`energiePokemonActifHBox`)**: `HBox` below the active Pokémon button, displaying `Label`s for attached energy, styled with `energy-tag`.
+    4.  **Hand (`panneauMainHBox`)**: `HBox` containing `Button`s for hand cards, styled with `card-button` and `text-18px`.
+        *   Action: Notifies game logic.
+    5.  **Bench (`panneauBancHBox`)**: Centered `HBox` displaying 5 slots.
+        *   **Occupied Slots**: `VBox` (styled `pokemon-node-display`) with Pokémon `Button` (styled `card-button text-18px`) and energy `Label`s (styled `energy-tag`).
+        *   **Empty Slots**: Placeholder `Button` (styled `empty-bench-slot`). Action: Notifies game logic.
     6.  **Pass Button (`passerButton`)**: `Button` with text "Passer", styled with `text-18px`.
-        *   Action: Notifies game logic (`jeu.passerAEteChoisi()`) and prints a debug message.
 
-## `VueAdversaire` Component (Opponent's View - Right Side):
+## `VueAdversaire` Component (Opponent's View):
 
-This component is a `VBox` with 10px internal spacing, styled with the `opponent-area` class, giving it a light pink/lavender background, padding, and a rounded border. Text elements generally use an 18px font. This is a read-only view.
+This component is a `VBox` with 8px internal spacing, styled with the `opponent-area` class (light pink/lavender background, padding, rounded border). This is a read-only view.
 
 *   **Elements (Top to Bottom):**
-    1.  **Opponent Name (`nomAdversaireLabel`)**: `Label` showing the opponent's name, styled with `text-18px`.
-    2.  **Static Label**: "Pokémon Actif:", styled with `text-18px`.
-    3.  **Opponent's Active Pokémon (`pokemonActifAdversaireLabel`)**: `Label` styled with `opponent-card-display` and `text-18px` (card-like placeholder appearance), showing the name of the opponent's active Pokémon.
-    4.  **Static Label**: "Banc:", styled with `text-18px`.
-    5.  **Opponent's Bench (`bancAdversaireHBox`)**: `HBox` (items aligned `CENTER_LEFT`, 5px spacing).
-        *   Displays `Label`s for each benched Pokémon, styled with `opponent-card-display` and `text-18px` (card-like placeholder appearance).
-    6.  **Opponent's Hand Size (`mainAdversaireLabel`)**: `Label` (e.g., "Main Adv.: 5"), styled with `text-18px`.
-    7.  **Opponent's Deck Size (`deckAdversaireLabel`)**: `Label` (e.g., "Deck Adv.: 30"), styled with `text-18px`.
-    8.  **Opponent's Discard Pile Size (`defausseAdversaireLabel`)**: `Label` (e.g., "Défausse Adv.: 10"), styled with `text-18px`.
-    9.  **Opponent's Prize Cards (`prixAdversaireLabel`)**: `Label` (e.g., "Prix Adv.: 4"), styled with `text-18px`.
-*   All displays update dynamically with opponent's state changes or when the active player (and thus opponent) changes.
+    1.  **Opponent Name (`nomAdversaireLabel`)**: `Label` showing the opponent's name, styled with `text-18px`. (Has a bottom margin).
+    2.  **Static Label**: "Pokémon Actif de l'adversaire:", styled with `text-18px`.
+    3.  **Opponent's Active Pokémon (`pokemonActifAdversaireDisplay`)**: `Label` styled with `opponent-card-display` and `text-18px` (card-like placeholder appearance), showing the name of the opponent's active Pokémon. (Has a minimum height).
+    4.  **Opponent's Active Pokémon's Energy (`energiePokemonActifAdversaireHBox`)**: `HBox` displaying energy tags for the opponent's active Pokémon. (Has a bottom margin and minimum height).
+    5.  **Static Label**: "Main de l'adversaire:", styled with `text-18px`.
+    6.  **Opponent's Hand (`panneauMainAdversaireHBox`)**: An `HBox` with 3px spacing.
+        *   Displays a series of `Label`s styled as card backs (`.opponent-card-back` class: gray background, border, fixed size) corresponding to the number of cards in the opponent's hand. (Has a bottom margin and minimum height).
+    7.  **Static Label**: "Banc de l'adversaire:", styled with `text-18px`.
+    8.  **Opponent's Bench (`panneauBancAdversaireHBox`)**: `HBox` (items aligned `CENTER_LEFT`, 5px spacing).
+        *   Displays a `VBox` for each benched Pokémon (styled `pokemon-node-display`), which includes a `Label` for the Pokémon's name (styled `opponent-card-display text-18px`) and an `HBox` for its energy tags. (Has a bottom margin and minimum height).
+    9.  **Counts Area (`HBox`)**: An `HBox` grouping the following labels, with padding above it:
+        *   **Opponent's Deck Size (`deckAdversaireLabel`)**: `Label` (e.g., "Deck Adv.: 30"), styled with `text-18px`.
+        *   **Opponent's Discard Pile Size (`defausseAdversaireLabel`)**: `Label` (e.g., "Défausse Adv.: 10"), styled with `text-18px`.
+        *   **Opponent's Prize Cards (`prixAdversaireLabel`)**: `Label` (e.g., "Prix Adv.: 4"), styled with `text-18px`.
+*   All displays update dynamically.
 
 ## Styling (`style.css`):
 
 This section summarizes the key styles and their effects.
 
 *   **General**:
-    *   Font "Verdana" is the base family (specified in `.root`).
-    *   `.root` style also defines default text fill black and base font size of 12px.
-    *   `.game-view-root-padding`: Adds overall padding around the main game area.
+    *   Font "Verdana" is the base family.
+    *   `.root` style: Default text fill black, base font size 12px.
+    *   `.game-view-root-padding`: Adds padding around the main game area.
 *   **Text & Buttons**:
-    *   `.label.text-18px`, `.button.text-18px`: Applied to most primary labels and buttons for an 18px font size.
+    *   `.label.text-18px`, `.button.text-18px`: For 18px font size.
 *   **Specific Areas**:
-    *   `.instruction-area`: Light gray background, padding, bottom border, 18px font for the instruction bar.
-    *   `.player-area`: Light blue background, padding, rounded border for the active player's section.
-    *   `.opponent-area`: Light pink/lavender background, padding, rounded border for the opponent's section.
+    *   `.instruction-area`: For the instruction bar (light gray background, padding, border, 18px font).
+    *   `.player-area`: For the active player's section (light blue background, padding, rounded border).
+    *   `.opponent-area`: For the opponent's section (light pink/lavender background, padding, rounded border).
 *   **Card-like Elements**:
-    *   `.card-button`: Styles hand card buttons and the active Pokémon button with a fixed size, border, white background, and top-center text alignment.
-    *   `.pokemon-node-display`: Styles the VBox container for benched Pokémon with a fixed width, border, and white background.
-    *   `.empty-bench-slot`: Styles empty bench slots with a dashed border, specific background, and smaller font.
-    *   `.opponent-card-display`: Styles labels for opponent's Pokémon (active/bench) with a border, white background, and padding for a placeholder card look.
+    *   `.card-button`: For player's hand cards and active Pokémon button (fixed size, border, white background).
+    *   `.pokemon-node-display`: For VBox containers of benched Pokémon (fixed width, border, white background).
+    *   `.empty-bench-slot`: For empty bench slot placeholders (dashed border, specific background, smaller font).
+    *   `.opponent-card-display`: For labels showing opponent's Pokémon (active/bench) as card placeholders.
+    *   `.opponent-card-back`: For labels representing backs of cards in opponent's hand (gray background, border, fixed size).
 *   **Other UI Elements**:
-    *   `.energy-tag`: Styles energy labels with a smaller font, padding, border, and light gray background for a chip-like look.
-    *   `.bordered-titled-title`, `.bordered-titled-border`, `.bordered-titled-content`: Styles for creating titled panes (likely used for other UI parts not detailed here, or general purpose).
-
+    *   `.energy-tag`: For energy labels (smaller font, padding, border, light gray background).
+    *   `.bordered-titled-title`, etc.: For titled panes.
 ```

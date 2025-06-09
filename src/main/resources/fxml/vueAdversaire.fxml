@@ -1,27 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.scene.layout.VBox"
-         spacing="10"
+         spacing="8" <!-- Adjusted spacing -->
          stylesheets="@../css/style.css"
-         styleClass="opponent-area"
+         styleClass="opponent-area" <!-- Existing style for background/padding -->
          xmlns:fx="http://javafx.com/fxml/1"
          xmlns="http://javafx.com/javafx/11.0.1">
 
-    <Label fx:id="nomAdversaireLabel" styleClass="text-18px" text="Nom Adversaire"/>
+    <Label fx:id="nomAdversaireLabel" styleClass="text-18px" text="Nom Adversaire">
+        <VBox.margin>
+            <Insets bottom="5.0" />
+        </VBox.margin>
+    </Label>
 
-    <Label text="Pokémon Actif:" styleClass="text-18px"/>
-    <Label fx:id="pokemonActifAdversaireLabel" styleClass="opponent-card-display text-18px" text="Pokemon Actif Adv."/>
+    <!-- Opponent's Active Pokemon Area -->
+    <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
+    <Label fx:id="pokemonActifAdversaireDisplay" styleClass="opponent-card-display text-18px" text="Pokemon Actif Adv." minHeight="60"/> <!-- Min height for card display -->
+    <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
+        <VBox.margin>
+            <Insets bottom="10.0" />
+        </VBox.margin>
+    </HBox>
 
-    <Label text="Banc:" styleClass="text-18px"/>
-    <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT"/> <!-- Changed to CENTER_LEFT for better look -->
+    <!-- Opponent's Hand Area -->
+    <Label text="Main de l'adversaire:" styleClass="text-18px"/>
+    <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT" minHeight="50"> <!-- Min height for card backs -->
+        <VBox.margin>
+            <Insets bottom="10.0" />
+        </VBox.margin>
+    </HBox>
 
-    <Label fx:id="mainAdversaireLabel" styleClass="text-18px" text="Main Adv.: X"/>
-    <Label fx:id="deckAdversaireLabel" styleClass="text-18px" text="Deck Adv.: Y"/>
-    <Label fx:id="defausseAdversaireLabel" styleClass="text-18px" text="Défausse Adv.: Z"/>
-    <Label fx:id="prixAdversaireLabel" styleClass="text-18px" text="Prix Adv.: P"/>
+    <!-- Opponent's Bench Area -->
+    <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
+    <HBox fx:id="panneauBancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70"> <!-- Min height for bench cards -->
+        <VBox.margin>
+            <Insets bottom="10.0" />
+        </VBox.margin>
+    </HBox>
+
+    <!-- Opponent's Counts Area -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <padding>
+            <Insets top="5.0" />
+        </padding>
+        <Label fx:id="deckAdversaireLabel" styleClass="text-18px" text="Deck: Y"/>
+        <Label fx:id="defausseAdversaireLabel" styleClass="text-18px" text="Défausse: Z"/>
+        <Label fx:id="prixAdversaireLabel" styleClass="text-18px" text="Prix: P"/>
+    </HBox>
 
 </fx:root>
