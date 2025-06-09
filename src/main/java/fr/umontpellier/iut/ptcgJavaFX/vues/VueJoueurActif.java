@@ -195,11 +195,8 @@ public class VueJoueurActif extends VBox {
                     Button boutonPokemonBanc = new Button(pokemon.getCartePokemon().getNom());
                     boutonPokemonBanc.getStyleClass().add("text-18px");
                     boutonPokemonBanc.setOnAction(event -> {
-                        if (this.jeu != null) {
-                            // IPokemon does not have getId(), but ICarte does.
-                            // So, we use pokemon.getCartePokemon().getId().
-                            this.jeu.unPokemonDuBancAEteChoisi(pokemon.getCartePokemon().getId());
-                        }
+                        // Action changed as per new requirement
+                        System.out.println("Bouton Pokémon du banc cliqué : " + pokemon.getCartePokemon().getNom() + " (ID: " + pokemon.getCartePokemon().getId() + "). Action à définir.");
                     });
                     panneauBancHBox.getChildren().add(boutonPokemonBanc);
                 }
