@@ -8,22 +8,31 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap; // For energy display
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos; // For alignment
+import javafx.scene.Node; // For creerPokemonBancNode return type
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region; // For placeholders or card backs
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.util.List; // For energieProperty value type
 
 public class VueAdversaire extends VBox {
+    private static final int MAX_BENCH_SLOTS = 5; // Matching VueJoueurActif
 
-    private IJeu jeu; // Not strictly needed if VueAdversaire only observes a given IJoueur
+    private IJeu jeu;
     private IJoueur adversaire;
 
     @FXML private Label nomAdversaireLabel;
-    @FXML private Label pokemonActifAdversaireLabel;
+    @FXML private Label pokemonActifAdversaireDisplay; // Renamed
+    @FXML private HBox energiePokemonActifAdversaireHBox; // Added
     @FXML private HBox bancAdversaireHBox;
+    @FXML private HBox panneauMainAdversaireHBox; // Added
+    // mainAdversaireLabel is still used for count, but now part of a different logical group in FXML
     @FXML private Label mainAdversaireLabel;
     @FXML private Label deckAdversaireLabel;
     @FXML private Label defausseAdversaireLabel;
@@ -68,23 +77,29 @@ public class VueAdversaire extends VBox {
     private void initialiserAffichage() {
         if (adversaire == null) {
             nomAdversaireLabel.setText("Adversaire non défini");
-            pokemonActifAdversaireLabel.setText("N/A");
-            bancAdversaireHBox.getChildren().clear();
-            mainAdversaireLabel.setText("Main: N/A");
-            deckAdversaireLabel.setText("Deck: N/A");
-            defausseAdversaireLabel.setText("Défausse: N/A");
-            prixAdversaireLabel.setText("Prix: N/A");
+            if (pokemonActifAdversaireDisplay != null) pokemonActifAdversaireDisplay.setText("N/A");
+            if (energiePokemonActifAdversaireHBox != null) energiePokemonActifAdversaireHBox.getChildren().clear();
+            if (panneauMainAdversaireHBox != null) panneauMainAdversaireHBox.getChildren().clear();
+            if (bancAdversaireHBox != null) bancAdversaireHBox.getChildren().clear();
+            if (mainAdversaireLabel != null) mainAdversaireLabel.setText("Main Adv.: N/A");
+            if (deckAdversaireLabel != null) deckAdversaireLabel.setText("Deck Adv.: N/A");
+            if (defausseAdversaireLabel != null) defausseAdversaireLabel.setText("Défausse Adv.: N/A");
+            if (prixAdversaireLabel != null) prixAdversaireLabel.setText("Prix Adv.: N/A");
             return;
         }
 
         // Initialize the shared listener for card counts
-        this.cardCountChangeListener = c -> mettreAJourComptesCartesAdversaire();
+        this.cardCountChangeListener = c -> {
+            mettreAJourComptesCartesAdversaire(); // Updates count labels
+            placerMainAdversaire(); // Updates visual hand display
+        };
 
         // Initial UI setup
-        nomAdversaireLabel.setText(adversaire.getNom()); // Assuming getNom() is available and sufficient for now
+        if (nomAdversaireLabel != null) nomAdversaireLabel.setText(adversaire.getNom());
         placerPokemonActifAdversaire();
         placerBancAdversaire();
-        mettreAJourComptesCartesAdversaire();
+        placerMainAdversaire(); // Initial placement of hand representation
+        mettreAJourComptesCartesAdversaire(); // Initial update of counts
 
         // Setup listeners
         setupListeners();
@@ -163,28 +178,80 @@ public class VueAdversaire extends VBox {
 
 
     private void placerPokemonActifAdversaire() {
+        IPokemon pkmnActif = null;
         if (adversaire != null && adversaire.pokemonActifProperty() != null) {
-            IPokemon pkmnActif = adversaire.pokemonActifProperty().get();
+            pkmnActif = adversaire.pokemonActifProperty().get();
+        }
+
+        if (pokemonActifAdversaireDisplay != null) {
             if (pkmnActif != null && pkmnActif.getCartePokemon() != null) {
-                pokemonActifAdversaireLabel.setText(pkmnActif.getCartePokemon().getNom());
+                pokemonActifAdversaireDisplay.setText(pkmnActif.getCartePokemon().getNom());
             } else {
-                pokemonActifAdversaireLabel.setText("Aucun");
+                pokemonActifAdversaireDisplay.setText("Aucun");
             }
-        } else {
-            pokemonActifAdversaireLabel.setText("N/A");
+        }
+
+        if (energiePokemonActifAdversaireHBox != null) {
+            energiePokemonActifAdversaireHBox.getChildren().clear();
+            if (pkmnActif != null) {
+                ObservableMap<String, List<String>> energieMap = pkmnActif.energieProperty();
+                if (energieMap != null) {
+                    for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                        Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
+                        energyLabel.getStyleClass().add("energy-tag");
+                        energiePokemonActifAdversaireHBox.getChildren().add(energyLabel);
+                    }
+                }
+            }
         }
     }
 
+    private Node creerOpponentPokemonBancNode(IPokemon pokemon) {
+        VBox pokemonCardContainer = new VBox(2);
+        pokemonCardContainer.getStyleClass().add("pokemon-node-display"); // Using similar style as player's bench node
+        pokemonCardContainer.setAlignment(Pos.CENTER);
+
+        Label pkmnLabel = new Label(pokemon.getCartePokemon().getNom());
+        pkmnLabel.getStyleClass().setAll("opponent-card-display", "text-18px"); // Name part
+
+        HBox energieHBox = new HBox(2);
+        energieHBox.setAlignment(Pos.CENTER);
+        ObservableMap<String, List<String>> energieMap = pokemon.energieProperty();
+        if (energieMap != null) {
+            for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
+                energyLabel.getStyleClass().add("energy-tag");
+                energieHBox.getChildren().add(energyLabel);
+            }
+        }
+        pokemonCardContainer.getChildren().addAll(pkmnLabel, energieHBox);
+        return pokemonCardContainer;
+    }
+
     private void placerBancAdversaire() {
+        if (bancAdversaireHBox == null) return;
         bancAdversaireHBox.getChildren().clear();
         if (adversaire != null && adversaire.getBanc() != null) {
             for (IPokemon pokemon : adversaire.getBanc()) {
                 if (pokemon != null && pokemon.getCartePokemon() != null) {
-                    Label pkmnLabel = new Label(pokemon.getCartePokemon().getNom());
-                    // pkmnLabel.setStyle("-fx-border-color: black; -fx-padding: 5px;"); // Removed inline style
-                    pkmnLabel.getStyleClass().setAll("opponent-card-display", "text-18px"); // Added style classes
-                    bancAdversaireHBox.getChildren().add(pkmnLabel);
+                    bancAdversaireHBox.getChildren().add(creerOpponentPokemonBancNode(pokemon));
                 }
+            }
+            // For fixed slots (displaying empty placeholders), loop MAX_BENCH_SLOTS
+            // and add placeholders if pokemon is null. Simpler for now: only show actual Pokemon.
+        }
+    }
+
+    private void placerMainAdversaire() {
+        if (panneauMainAdversaireHBox == null) return;
+        panneauMainAdversaireHBox.getChildren().clear();
+        if (adversaire != null && adversaire.getMain() != null) {
+            int handSize = adversaire.getMain().size();
+            for (int i = 0; i < handSize; i++) {
+                Label cardBack = new Label("Carte"); // Placeholder text
+                cardBack.getStyleClass().add("opponent-card-back"); // CSS class for styling
+                // Dimensions for card backs should be handled by CSS class .opponent-card-back
+                panneauMainAdversaireHBox.getChildren().add(cardBack);
             }
         }
     }
