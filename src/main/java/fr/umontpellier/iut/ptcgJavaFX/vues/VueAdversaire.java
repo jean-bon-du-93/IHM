@@ -91,7 +91,7 @@ public class VueAdversaire extends VBox {
     }
 
     private void setupListeners() {
-        if (adversaire == null) return;
+        if (this.adversaire == null) return; // NPE Hardening
 
         // Listener for active Pokémon
         ObjectProperty<? extends IPokemon> pokemonActifProp = adversaire.pokemonActifProperty();
