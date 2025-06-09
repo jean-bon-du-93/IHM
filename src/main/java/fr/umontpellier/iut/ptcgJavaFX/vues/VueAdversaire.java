@@ -32,10 +32,11 @@ public class VueAdversaire extends VBox {
     // Listeners to update UI when properties of 'adversaire' change
     private ChangeListener<IPokemon> pokemonActifListener;
     private ListChangeListener<IPokemon> bancListener;
-    private ListChangeListener<ICarte> mainListener;
-    private ListChangeListener<ICarte> deckListener;
-    private ListChangeListener<ICarte> defausseListener;
-    private ListChangeListener<ICarte> prixListener;
+    // private ListChangeListener<ICarte> mainListener; // Replaced by cardCountChangeListener
+    // private ListChangeListener<ICarte> deckListener; // Replaced by cardCountChangeListener
+    // private ListChangeListener<ICarte> defausseListener; // Replaced by cardCountChangeListener
+    // private ListChangeListener<ICarte> prixListener; // Replaced by cardCountChangeListener
+    private ListChangeListener<ICarte> cardCountChangeListener; // For main, deck, discard, prizes
 
 
     public VueAdversaire() {
@@ -76,6 +77,9 @@ public class VueAdversaire extends VBox {
             return;
         }
 
+        // Initialize the shared listener for card counts
+        this.cardCountChangeListener = c -> mettreAJourComptesCartesAdversaire();
+
         // Initial UI setup
         nomAdversaireLabel.setText(adversaire.getNom()); // Assuming getNom() is available and sufficient for now
         placerPokemonActifAdversaire();
@@ -97,38 +101,31 @@ public class VueAdversaire extends VBox {
         }
 
         // Listener for bench
-        ObservableList<? extends IPokemon> bancList = adversaire.getBanc();
+        ObservableList<? extends IPokemon> bancList = adversaire.getBanc(); // Assuming getBanc() returns ObservableList
         if (bancList != null) {
             bancListener = change -> placerBancAdversaire();
             bancList.addListener(bancListener);
         }
 
-        // Listener for hand size
+        // Listeners for card counts using the shared listener
+        // Assuming IJoueur has xxxProperty() methods returning ObservableList or ListProperty
+        // If IJoueur provides e.g. mainProperty() which is a ReadOnlyListProperty<ICarte>,
+        // then .addListener(this.cardCountChangeListener) is correct.
+        // If it's just getMain() returning ObservableList, that's also fine.
+        // The task implies property methods exist for these.
+        // Correcting main to use getMain() as per new instructions
         ObservableList<? extends ICarte> mainList = adversaire.getMain();
         if (mainList != null) {
-            mainListener = change -> mettreAJourComptesCartesAdversaire();
-            mainList.addListener(mainListener);
+            mainList.addListener(this.cardCountChangeListener);
         }
-
-        // Listener for deck size (using getPioche as per IJoueur interface)
-        ObservableList<? extends ICarte> deckList = adversaire.getPioche();
-        if (deckList != null) {
-            deckListener = change -> mettreAJourComptesCartesAdversaire();
-            deckList.addListener(deckListener);
+        if (adversaire.piocheProperty() != null) { // Changed from getPioche()
+            adversaire.piocheProperty().addListener(this.cardCountChangeListener);
         }
-
-        // Listener for discard pile size
-        ObservableList<? extends ICarte> defausseList = adversaire.getDefausse();
-        if (defausseList != null) {
-            defausseListener = change -> mettreAJourComptesCartesAdversaire();
-            defausseList.addListener(defausseListener);
+        if (adversaire.defausseProperty() != null) { // Changed from getDefausse()
+            adversaire.defausseProperty().addListener(this.cardCountChangeListener);
         }
-
-        // Listener for prize cards (using getCartesRecompense as per IJoueur interface)
-        ObservableList<? extends ICarte> prixList = adversaire.getCartesRecompense();
-        if (prixList != null) {
-            prixListener = change -> mettreAJourComptesCartesAdversaire();
-            prixList.addListener(prixListener);
+        if (adversaire.recompensesProperty() != null) { // Changed from getCartesRecompense()
+            adversaire.recompensesProperty().addListener(this.cardCountChangeListener);
         }
     }
 
@@ -140,29 +137,27 @@ public class VueAdversaire extends VBox {
             pokemonActifProp.removeListener(pokemonActifListener);
         }
 
-        ObservableList<? extends IPokemon> bancList = adversaire.getBanc();
+        ObservableList<? extends IPokemon> bancList = adversaire.getBanc(); // Assuming getBanc()
         if (bancList != null && bancListener != null) {
             bancList.removeListener(bancListener);
         }
 
-        ObservableList<? extends ICarte> mainList = adversaire.getMain();
-        if (mainList != null && mainListener != null) {
-            mainList.removeListener(mainListener);
-        }
-
-        ObservableList<? extends ICarte> deckList = adversaire.getPioche();
-        if (deckList != null && deckListener != null) {
-            deckList.removeListener(deckListener);
-        }
-
-        ObservableList<? extends ICarte> defausseList = adversaire.getDefausse();
-        if (defausseList != null && defausseListener != null) {
-            defausseList.removeListener(defausseListener);
-        }
-
-        ObservableList<? extends ICarte> prixList = adversaire.getCartesRecompense();
-        if (prixList != null && prixListener != null) {
-            prixList.removeListener(prixListener);
+        // Remove the shared card count listener
+        if (this.cardCountChangeListener != null) {
+            // Correcting main to use getMain()
+            ObservableList<? extends ICarte> mainList = adversaire.getMain();
+            if (mainList != null) {
+                mainList.removeListener(this.cardCountChangeListener);
+            }
+            if (adversaire.piocheProperty() != null) { // Changed from getPioche()
+                adversaire.piocheProperty().removeListener(this.cardCountChangeListener);
+            }
+            if (adversaire.defausseProperty() != null) { // Changed from getDefausse()
+                adversaire.defausseProperty().removeListener(this.cardCountChangeListener);
+            }
+            if (adversaire.recompensesProperty() != null) { // Changed from getCartesRecompense()
+                adversaire.recompensesProperty().removeListener(this.cardCountChangeListener);
+            }
         }
     }
 
@@ -198,9 +193,13 @@ public class VueAdversaire extends VBox {
     private void mettreAJourComptesCartesAdversaire() {
         if (adversaire == null) return;
 
-        mainAdversaireLabel.setText("Main: " + (adversaire.getMain() != null ? adversaire.getMain().size() : "N/A"));
-        deckAdversaireLabel.setText("Deck: " + (adversaire.getPioche() != null ? adversaire.getPioche().size() : "N/A"));
-        defausseAdversaireLabel.setText("Défausse: " + (adversaire.getDefausse() != null ? adversaire.getDefausse().size() : "N/A"));
-        prixAdversaireLabel.setText("Prix: " + (adversaire.getCartesRecompense() != null ? adversaire.getCartesRecompense().size() : "N/A"));
+        // Assuming xxxProperty() returns an ObservableList or a ListProperty that has a size() method or getSize().
+        // For ReadOnlyListProperty, it would be .getSize(). For ObservableList, it's .size().
+        // The task used .size(), implying the property itself is an ObservableList or SimpleListProperty.
+        // Correcting main to use getMain().size()
+        mainAdversaireLabel.setText("Main Adv.: " + (adversaire.getMain() != null ? adversaire.getMain().size() : "N/A"));
+        deckAdversaireLabel.setText("Deck Adv.: " + (adversaire.piocheProperty() != null ? adversaire.piocheProperty().size() : "N/A"));
+        defausseAdversaireLabel.setText("Défausse Adv.: " + (adversaire.defausseProperty() != null ? adversaire.defausseProperty().size() : "N/A"));
+        prixAdversaireLabel.setText("Prix Adv.: " + (adversaire.recompensesProperty() != null ? adversaire.recompensesProperty().size() : "N/A"));
     }
 }
