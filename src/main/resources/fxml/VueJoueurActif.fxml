@@ -10,7 +10,8 @@
       stylesheets="@../css/style.css"
       spacing="10">
     <Label fx:id="nomDuJoueurLabel" styleClass="text-18px"/>
-    <Label fx:id="pokemonActifLabel" styleClass="text-18px"/>
+    <Button fx:id="pokemonActifButton" styleClass="text-18px" onAction="#onPokemonActifButtonClick"/>
+    <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER_LEFT"/>
     <HBox fx:id="panneauMainHBox" spacing="5"/>
     <HBox fx:id="panneauBancHBox" spacing="5" alignment="CENTER"/>
     <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
