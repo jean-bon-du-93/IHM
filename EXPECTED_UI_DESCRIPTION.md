@@ -17,7 +17,7 @@ This component is a `VBox` (vertical layout) providing the main game interface. 
     *   A `Label` (`instructionLabel`) displaying the current game instruction (e.g., "Choose a Pokémon to be active", "Player John's turn").
     *   Styled by `instruction-area`: This gives it a light gray background, padding, a bottom border, and an 18px font size, making it a distinct instruction bar.
 *   **Middle Element**:
-    *   An `HBox` (horizontal layout) containing two main sections, side-by-side, with 20px spacing between them:
+    *   An `HBox` (horizontal layout) containing two main sections, side-by-side, with 20px spacing between them. This `HBox` is configured to grow vertically (`VBox.vgrow="ALWAYS"`), taking up the available space below the instruction label.
         *   **Left Side**: The `VueJoueurActif` component (active player's view).
         *   **Right Side**: The `VueAdversaire` component (opponent's view).
 
