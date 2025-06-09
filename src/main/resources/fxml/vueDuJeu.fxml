@@ -9,10 +9,11 @@
 <fx:root type="javafx.scene.layout.VBox"
       spacing="15"
       stylesheets="@../css/style.css"
+      styleClass="game-view-root-padding"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/11.0.1">
 
-    <Label fx:id="instructionLabel" styleClass="text-18px"/>
+    <Label fx:id="instructionLabel" styleClass="instruction-area"/>
     <HBox spacing="20" alignment="TOP_CENTER">
         <VueJoueurActif fx:id="panneauDuJoueurActif"/>
         <VueAdversaire fx:id="vueAdversaire"/>

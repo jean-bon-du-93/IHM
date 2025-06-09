@@ -180,10 +180,9 @@ public class VueAdversaire extends VBox {
         if (adversaire != null && adversaire.getBanc() != null) {
             for (IPokemon pokemon : adversaire.getBanc()) {
                 if (pokemon != null && pokemon.getCartePokemon() != null) {
-                    // Simple representation for opponent's bench: Label with name or "Dos de Carte"
                     Label pkmnLabel = new Label(pokemon.getCartePokemon().getNom());
-                    // Or Label pkmnLabel = new Label("Pokémon"); // To hide info
-                    pkmnLabel.setStyle("-fx-border-color: black; -fx-padding: 5px;");
+                    // pkmnLabel.setStyle("-fx-border-color: black; -fx-padding: 5px;"); // Removed inline style
+                    pkmnLabel.getStyleClass().setAll("opponent-card-display", "text-18px"); // Added style classes
                     bancAdversaireHBox.getChildren().add(pkmnLabel);
                 }
             }

@@ -1,5 +1,11 @@
 .root {
     -fx-font-family: "Verdana";
+    /* Base font size for elements not otherwise styled,
+       though many elements get specific sizes via other rules.
+       The task description mentions .root with font-size 12px in the final "Styling" summary,
+       so I'll add it here. */
+    -fx-font-size: 12px;
+    -fx-text-fill: black; /* Added from task description's summary of .root */
 }
 
 .bordered-titled-title {
@@ -18,6 +24,110 @@
     -fx-padding: 18 5 5 5;
 }
 
-.text-18px {
+/* Modified .text-18px for more specificity as per task description */
+.label.text-18px, .button.text-18px {
     -fx-font-size: 18px;
 }
+
+/* === New Styles for Aesthetic Improvements === */
+
+/* General Layout Padding */
+.game-view-root-padding {
+    -fx-padding: 10px;
+}
+
+/* Instruction Area */
+.instruction-area {
+    -fx-background-color: #E0E0E0; /* Light gray */
+    -fx-padding: 8px;
+    -fx-border-color: #B0B0B0; /* Darker gray border */
+    -fx-border-width: 0 0 1px 0; /* Bottom border only */
+    -fx-alignment: CENTER_LEFT; /* Align text to left if it's a Label in a full-width area */
+}
+
+/* Player and Opponent Area Backgrounds */
+.player-area {
+    -fx-background-color: #F0F8FF; /* Alice Blue */
+    -fx-padding: 10px;
+    -fx-border-color: #D0D8DF;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+.opponent-area {
+    -fx-background-color: #FFF0F5; /* Lavender Blush */
+    -fx-padding: 10px;
+    -fx-border-color: #DFD0D0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+/* Card-like display for Buttons and Pokémon nodes */
+.card-button { /* For hand cards and active Pokemon button */
+    -fx-min-width: 80px;
+    -fx-pref-width: 80px; /* Give a consistent preferred width */
+    -fx-min-height: 100px;
+    -fx-border-color: #A0A0A0;
+    -fx-border-width: 1px;
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-alignment: TOP_CENTER; /* Text at top, allows space for potential future image */
+    -fx-wrap-text: true;
+}
+
+.pokemon-node-display { /* For VBox container of benched Pokemon */
+    -fx-min-width: 80px; /* Match card-button width */
+    -fx-pref-width: 80px;
+    -fx-border-color: #A0A0A0;
+    -fx-border-width: 1px;
+    -fx-background-color: #FFFFFF; /* White background for the VBox */
+    -fx-padding: 3px;
+    -fx-alignment: CENTER;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+}
+
+/* Empty Bench Slot Styling */
+.empty-bench-slot {
+    -fx-min-width: 80px;  /* Match card-button width */
+    -fx-pref-width: 80px;
+    -fx-min-height: 100px; /* Match card-button height */
+    -fx-background-color: #F0F0F0; /* Lighter gray than instruction area */
+    -fx-border-color: #C0C0C0; /* Gray border */
+    -fx-border-style: dashed;
+    -fx-border-width: 1.5px; /* Slightly thinner dashed border */
+    -fx-text-fill: #666666; /* Dark gray text */
+    -fx-font-size: 11px; /* Smaller font for "Vide X" */
+    -fx-alignment: CENTER;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+}
+
+/* Energy Tag Styling */
+.energy-tag {
+    -fx-font-size: 9px; /* Made slightly smaller for more discretion */
+    -fx-padding: 1px 3px; /* Adjusted padding */
+    -fx-border-color: #BFBFBF; /* Slightly darker border for better visibility */
+    -fx-border-width: 1px;
+    -fx-background-color: #E8E8E8; /* Light gray background */
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+/* Opponent's Card Display (Labels for Pokémon) */
+.opponent-card-display { /* For opponent's active/bench Pokemon labels */
+    -fx-min-height: 25px; /* Ensure a minimum height */
+    -fx-border-color: #A0A0A0;
+    -fx-border-width: 1px;
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-wrap-text: true;
+}
+
+/* Default text for non-styled labels/buttons might inherit from .root or scene default */
+/* The .label.text-18px, .button.text-18px rule already handles more specific 18px styling. */
+/* No further changes to .text-18px are needed beyond what was specified. */
