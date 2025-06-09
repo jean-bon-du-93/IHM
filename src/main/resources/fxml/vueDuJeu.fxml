@@ -5,7 +5,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:controller="fr.umontpellier.iut.ptcgJavaFX.vues.VueDuJeu"
+<fx:root type="javafx.scene.layout.VBox"
       spacing="15"
       stylesheets="@../css/style.css"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -15,4 +15,4 @@
     <VueJoueurActif fx:id="panneauDuJoueurActif"/>
     <Button fx:id="boutonPasserVueDuJeu" text="Passer (VueDuJeu)" styleClass="text-18px" onAction="#actionPasserVueDuJeu"/>
 
-</VBox>
+</fx:root>
