@@ -228,7 +228,8 @@ public class VueJoueurActif extends VBox {
                 if (energieMap != null) {
                     for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
                         Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
-                        energyLabel.setStyle("-fx-font-size: 10px; -fx-padding: 2px; -fx-border-color: lightgray;");
+                        // energyLabel.setStyle("-fx-font-size: 10px; -fx-padding: 2px; -fx-border-color: lightgray;"); // Removed inline style
+                        energyLabel.getStyleClass().add("energy-tag"); // Added style class
                         energiePokemonActifHBox.getChildren().add(energyLabel);
                     }
                 }
@@ -245,7 +246,8 @@ public class VueJoueurActif extends VBox {
     private Button creerBoutonCarte(ICarte carte) {
         Button boutonCarte = new Button(carte.getNom());
         boutonCarte.setUserData(carte); // Store card data for identification
-        boutonCarte.getStyleClass().add("text-18px");
+        // boutonCarte.getStyleClass().add("text-18px"); // Replaced by setAll
+        boutonCarte.getStyleClass().setAll("card-button", "text-18px");
         boutonCarte.setOnAction(event -> {
             if (this.jeu != null) {
                 this.jeu.uneCarteDeLaMainAEteChoisie(carte.getId());
@@ -311,7 +313,8 @@ public class VueJoueurActif extends VBox {
 
     private javafx.scene.Node creerPokemonBancNode(IPokemon pokemon) {
         Button boutonPokemonBanc = new Button(pokemon.getCartePokemon().getNom());
-        boutonPokemonBanc.getStyleClass().add("text-18px");
+        // boutonPokemonBanc.getStyleClass().add("text-18px"); // Replaced by setAll
+        boutonPokemonBanc.getStyleClass().setAll("card-button", "text-18px");
         boutonPokemonBanc.setOnAction(event -> {
             System.out.println("Bouton Pokémon du banc cliqué : " + pokemon.getCartePokemon().getNom() + " (ID: " + pokemon.getCartePokemon().getId() + "). Action à définir.");
         });
@@ -319,6 +322,7 @@ public class VueJoueurActif extends VBox {
         VBox pokemonCardContainer = new VBox(2);
         pokemonCardContainer.setAlignment(Pos.CENTER);
         pokemonCardContainer.setUserData(pokemon); // Store pokemon for identification in updatePanneauBanc
+        pokemonCardContainer.getStyleClass().add("pokemon-node-display"); // Added style class
 
         HBox energieBancPokemonHBox = new HBox(2);
         energieBancPokemonHBox.setAlignment(Pos.CENTER);
@@ -327,7 +331,8 @@ public class VueJoueurActif extends VBox {
         if (energieMap != null) {
             for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
                 Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
-                energyLabel.setStyle("-fx-font-size: 9px; -fx-padding: 1px; -fx-border-color: lightgray;");
+                // energyLabel.setStyle("-fx-font-size: 9px; -fx-padding: 1px; -fx-border-color: lightgray;"); // Removed inline style
+                energyLabel.getStyleClass().add("energy-tag"); // Added style class
                 energieBancPokemonHBox.getChildren().add(energyLabel);
             }
         }
@@ -353,9 +358,10 @@ public class VueJoueurActif extends VBox {
                 panneauBancHBox.getChildren().add(creerPokemonBancNode(pokemonInSlot));
             } else {
                 Button emptySlotButton = new Button("Vide " + (slotIndex + 1));
-                emptySlotButton.getStyleClass().add("text-18px"); // Consider a different style for empty slots
-                emptySlotButton.setPrefWidth(100); // Adjust as needed, or use CSS for sizing
-                emptySlotButton.setPrefHeight(100); // Match typical card height or container height
+                // emptySlotButton.getStyleClass().add("text-18px"); // Replaced by setAll
+                emptySlotButton.getStyleClass().setAll("empty-bench-slot");
+                // emptySlotButton.setPrefWidth(100); // Removed, should be controlled by CSS
+                // emptySlotButton.setPrefHeight(100); // Removed, should be controlled by CSS
                 final int finalSlotIndex = slotIndex; // For use in lambda
                 emptySlotButton.setOnAction(event -> {
                     if (this.jeu != null) {

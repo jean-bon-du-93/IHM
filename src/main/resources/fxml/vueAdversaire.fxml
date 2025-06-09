@@ -7,13 +7,14 @@
 <fx:root type="javafx.scene.layout.VBox"
          spacing="10"
          stylesheets="@../css/style.css"
+         styleClass="opponent-area"
          xmlns:fx="http://javafx.com/fxml/1"
          xmlns="http://javafx.com/javafx/11.0.1">
 
     <Label fx:id="nomAdversaireLabel" styleClass="text-18px" text="Nom Adversaire"/>
 
     <Label text="Pokémon Actif:" styleClass="text-18px"/>
-    <Label fx:id="pokemonActifAdversaireLabel" styleClass="text-18px" text="Pokemon Actif Adv."/>
+    <Label fx:id="pokemonActifAdversaireLabel" styleClass="opponent-card-display text-18px" text="Pokemon Actif Adv."/>
 
     <Label text="Banc:" styleClass="text-18px"/>
     <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT"/> <!-- Changed to CENTER_LEFT for better look -->

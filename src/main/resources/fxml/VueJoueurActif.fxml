@@ -8,9 +8,10 @@
 <fx:root type="javafx.scene.layout.VBox"
       xmlns:fx="http://javafx.com/fxml/1"
       stylesheets="@../css/style.css"
+      styleClass="player-area"
       spacing="10">
     <Label fx:id="nomDuJoueurLabel" styleClass="text-18px"/>
-    <Button fx:id="pokemonActifButton" styleClass="text-18px" onAction="#onPokemonActifButtonClick"/>
+    <Button fx:id="pokemonActifButton" styleClass="card-button text-18px" onAction="#onPokemonActifButtonClick"/>
     <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER_LEFT"/>
     <HBox fx:id="panneauMainHBox" spacing="5"/>
     <HBox fx:id="panneauBancHBox" spacing="5" alignment="CENTER"/>
