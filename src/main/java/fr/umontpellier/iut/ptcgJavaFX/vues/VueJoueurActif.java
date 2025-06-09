@@ -26,6 +26,8 @@ import java.util.List; // Added for type in MapChangeListener
 
 public class VueJoueurActif extends VBox {
 
+    private static final int MAX_BENCH_SLOTS = 5; // Added constant
+
     private IJeu jeu;
     private ObjectProperty<IJoueur> joueurActifProperty;
     @FXML
@@ -334,53 +336,34 @@ public class VueJoueurActif extends VBox {
     }
 
     private void updatePanneauBanc(ListChangeListener.Change<? extends IPokemon> change) {
-        if (panneauBancHBox == null) return;
-
-        while (change.next()) {
-            if (change.wasPermutated() || change.wasUpdated()) {
-                System.out.println("Banc change type (permutation/update) triggered full rebuild of banc.");
-                reconstruirePanneauBancComplet();
-                return;
-            } else {
-                if (change.wasRemoved()) {
-                    List<? extends IPokemon> removedPokemons = change.getRemoved();
-                    panneauBancHBox.getChildren().removeIf(node -> {
-                        if (node.getUserData() instanceof IPokemon) {
-                            IPokemon pokemonData = (IPokemon) node.getUserData();
-                            // Assuming IPokemon instances are unique enough or have a unique ID for comparison
-                            // If not, this might remove wrong elements if multiple identical (by content) Pokemon exist
-                            return removedPokemons.contains(pokemonData);
-                        }
-                        return false;
-                    });
-                }
-                if (change.wasAdded()) {
-                    List<? extends IPokemon> addedPokemons = change.getAddedSubList();
-                    int startIndex = change.getFrom();
-                    for (int i = 0; i < addedPokemons.size(); ++i) {
-                        IPokemon pokemon = addedPokemons.get(i);
-                        javafx.scene.Node pokemonNode = creerPokemonBancNode(pokemon);
-                        if (startIndex + i < panneauBancHBox.getChildren().size()) {
-                            panneauBancHBox.getChildren().add(startIndex + i, pokemonNode);
-                        } else {
-                            panneauBancHBox.getChildren().add(pokemonNode);
-                        }
-                    }
-                }
-            }
-        }
+        // Simplified to always rebuild due to fixed slot display logic
+        reconstruirePanneauBancComplet();
     }
 
     public void reconstruirePanneauBancComplet() {
         if (panneauBancHBox == null) return;
         panneauBancHBox.getChildren().clear();
         IJoueur joueurCourant = joueurActifProperty.get();
+        ObservableList<? extends IPokemon> banc = (joueurCourant != null) ? joueurCourant.getBanc() : null;
 
-        if (joueurCourant != null && joueurCourant.getBanc() != null) {
-            for (IPokemon pokemon : joueurCourant.getBanc()) {
-                if (pokemon != null && pokemon.getCartePokemon() != null) {
-                    panneauBancHBox.getChildren().add(creerPokemonBancNode(pokemon));
-                }
+        for (int slotIndex = 0; slotIndex < MAX_BENCH_SLOTS; slotIndex++) {
+            IPokemon pokemonInSlot = (banc != null && slotIndex < banc.size()) ? banc.get(slotIndex) : null;
+
+            if (pokemonInSlot != null && pokemonInSlot.getCartePokemon() != null) {
+                panneauBancHBox.getChildren().add(creerPokemonBancNode(pokemonInSlot));
+            } else {
+                Button emptySlotButton = new Button("Vide " + (slotIndex + 1));
+                emptySlotButton.getStyleClass().add("text-18px"); // Consider a different style for empty slots
+                emptySlotButton.setPrefWidth(100); // Adjust as needed, or use CSS for sizing
+                emptySlotButton.setPrefHeight(100); // Match typical card height or container height
+                final int finalSlotIndex = slotIndex; // For use in lambda
+                emptySlotButton.setOnAction(event -> {
+                    if (this.jeu != null) {
+                        // Assuming the game logic expects a String for the slot index
+                        this.jeu.unEmplacementVideDuBancAEteChoisi(String.valueOf(finalSlotIndex));
+                    }
+                });
+                panneauBancHBox.getChildren().add(emptySlotButton);
             }
         }
     }

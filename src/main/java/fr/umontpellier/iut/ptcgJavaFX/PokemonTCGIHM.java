@@ -43,7 +43,7 @@ public class PokemonTCGIHM extends Application {
 
     public void demarrerPartie() {
         vueDuJeu = new VueDuJeu(jeu);
-        vueDuJeu.creerBindings();
+        // vueDuJeu.creerBindings(); // This call is redundant as creerBindings() is called within VueDuJeu's initialize() method.
         Scene scene = new Scene(vueDuJeu, Screen.getPrimary().getBounds().getWidth() * pourcentageEcran,  Screen.getPrimary().getBounds().getHeight() * pourcentageEcran);
         jeu.run(); // le jeu doit être démarré après que les bindings ont été mis en place
 

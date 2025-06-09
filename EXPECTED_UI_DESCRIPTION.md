@@ -39,10 +39,13 @@ This component is a `VBox` with 10px internal spacing. Text elements generally u
         *   Action: Notifies game logic (`jeu.uneCarteDeLaMainAEteChoisie(carte.getId())`).
         *   Dynamically updates with hand changes.
     5.  **Bench (`panneauBancHBox`)**: Centered `HBox` with 5px spacing.
-        *   Contains a `VBox` for each benched Pokémon. Each `VBox` includes:
-            *   A `Button` with the benched Pokémon's name. Action: Prints debug message ("Bouton Pokémon du banc cliqué... Action à définir.").
-            *   An `HBox` below the button displaying `Label`s for attached energy (similar to active Pokémon's energy, but 9px font).
-        *   Updates with bench changes; energy display refreshes when bench refreshes.
+        *   Always displays 5 slots.
+        *   **Occupied Slots**: Display a `VBox` for each benched Pokémon. This `VBox` contains:
+            *   A `Button` with the benched Pokémon's name. Clicking it prints a debug message ("Bouton Pokémon du banc cliqué... Action à définir.").
+            *   An `HBox` below the button, displaying `Label`s for attached energy (similar to active Pokémon's energy, but 9px font).
+        *   **Empty Slots**: Display a `Button` styled as a placeholder (e.g., text "Vide X" where X is the slot number, 18px font, predefined size).
+            *   Action: Clicking an empty slot button notifies the game logic (`jeu.unEmplacementVideDuBancAEteChoisi(String.valueOf(slotIndex))`).
+        *   The entire bench area updates when Pokémon are added to or removed from the bench (triggering a full reconstruction of the 5 slots).
     6.  **Pass Button (`passerButton`)**: `Button` with text "Passer".
         *   Action: Notifies game logic (`jeu.passerAEteChoisi()`) and prints a debug message.
 
