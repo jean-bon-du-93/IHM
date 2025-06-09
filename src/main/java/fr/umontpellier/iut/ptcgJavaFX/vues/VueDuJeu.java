@@ -17,8 +17,6 @@ public class VueDuJeu extends VBox {
     private Label instructionLabel;
     @FXML
     private VueJoueurActif panneauDuJoueurActif;
-    @FXML
-    private Button boutonPasserVueDuJeu;
 
     public VueDuJeu(IJeu jeu) {
         this.jeu = jeu;
@@ -41,14 +39,6 @@ public class VueDuJeu extends VBox {
             panneauDuJoueurActif.postInit();      // Initialize VueJoueurActif's bindings & listeners
         }
         creerBindings(); // Now call bindings for VueDuJeu itself
-    }
-
-    @FXML
-    private void actionPasserVueDuJeu(ActionEvent event) {
-        if (this.jeu != null) {
-            this.jeu.passerAEteChoisi(); // Or a different action if this button is for something else
-            System.out.println("Bouton Passer de VueDuJeu cliqué"); // For differentiation
-        }
     }
 
     public void creerBindings() {
