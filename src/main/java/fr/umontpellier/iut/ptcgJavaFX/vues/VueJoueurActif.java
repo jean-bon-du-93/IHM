@@ -118,14 +118,14 @@ public class VueJoueurActif extends VBox {
             // It fires when the Pokemon instance in the active slot changes.
             if (oldPkmn != null) {
                 ObservableMap<String, List<String>> oldEnergieMap = oldPkmn.energieProperty();
-                if (oldEnergieMap != null) {
+                if (oldEnergieMap != null && this.energiePokemonActifListener != null) { // NPE check
                     oldEnergieMap.removeListener(this.energiePokemonActifListener);
                 }
             }
             placerPokemonActif(); // This will set button text and display energy for newPkmn
             if (newPkmn != null) {
                 ObservableMap<String, List<String>> newEnergieMap = newPkmn.energieProperty();
-                if (newEnergieMap != null) {
+                if (newEnergieMap != null && this.energiePokemonActifListener != null) { // NPE check
                     newEnergieMap.addListener(this.energiePokemonActifListener);
                 }
             } else {
