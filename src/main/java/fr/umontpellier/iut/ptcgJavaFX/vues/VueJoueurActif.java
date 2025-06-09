@@ -69,6 +69,7 @@ public class VueJoueurActif extends VBox {
 
     @FXML
     private void actionPasserParDefaut(ActionEvent event) {
+        System.out.println("Passer button clicked in VueJoueurActif, calling jeu.passerAEteChoisi()");
         if (this.jeu != null) {
             this.jeu.passerAEteChoisi();
         }

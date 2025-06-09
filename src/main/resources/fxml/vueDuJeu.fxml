@@ -13,6 +13,5 @@
 
     <Label fx:id="instructionLabel" styleClass="text-18px"/>
     <VueJoueurActif fx:id="panneauDuJoueurActif"/>
-    <Button fx:id="boutonPasserVueDuJeu" text="Passer (VueDuJeu)" styleClass="text-18px" onAction="#actionPasserVueDuJeu"/>
 
 </fx:root>
