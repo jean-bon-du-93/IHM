@@ -14,7 +14,7 @@
       xmlns="http://javafx.com/javafx/11.0.1">
 
     <Label fx:id="instructionLabel" styleClass="instruction-area"/>
-    <HBox spacing="20" alignment="TOP_CENTER">
+    <HBox spacing="20" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
         <VueJoueurActif fx:id="panneauDuJoueurActif"/>
         <VueAdversaire fx:id="vueAdversaire"/>
     </HBox>
