@@ -4,8 +4,7 @@ import fr.umontpellier.iut.ptcgJavaFX.ICarte;
 import fr.umontpellier.iut.ptcgJavaFX.IJeu;
 import fr.umontpellier.iut.ptcgJavaFX.IJoueur;
 import fr.umontpellier.iut.ptcgJavaFX.IPokemon;
-import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Added import
-import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Added import
+// import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Commented out if no longer needed
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -53,11 +52,13 @@ public class VueJoueurActif extends VBox {
     private ListChangeListener<ICarte> mainDuJoueurActifChangeListener;
     private ListChangeListener<IPokemon> changementBancJoueur;
     private MapChangeListener<String, List<String>> energiePokemonActifListener; // For active Pokemon
-    private ChangeListener<CartePokemon> carteDuPokemonActifListener; // Listener for active Pokemon's card changes (evolution)
+    // private ChangeListener<CartePokemon> carteDuPokemonActifListener; // RETIRÉ
 
     // Fields for benched Pokemon energy listeners
     private final Map<IPokemon, MapChangeListener<String, List<String>>> benchEnergyListeners = new HashMap<>();
     private final Map<IPokemon, HBox> benchPokemonEnergyUI = new HashMap<>();
+    // private final Map<IPokemon, ChangeListener<CartePokemon>> benchPokemonCardListeners = new HashMap<>(); // RETIRÉ
+    // private final Map<IPokemon, Button> benchPokemonButtons = new HashMap<>(); // RETIRÉ
 
 
     @FXML
@@ -139,12 +140,10 @@ public class VueJoueurActif extends VBox {
             placerPokemonActif();
         };
 
-        // Initialize the listener for the active Pokemon's card property (for evolution)
-        this.carteDuPokemonActifListener = (obsCard, oldCard, newCard) -> {
-            // La carte du Pokémon actif a changé (par exemple, il a évolué)
-            // Il suffit de redessiner le Pokémon actif.
-            placerPokemonActif();
-        };
+        // Initialisation de carteDuPokemonActifListener RETIRÉE
+        // this.carteDuPokemonActifListener = (obsCard, oldCard, newCard) -> {
+        //     placerPokemonActif();
+        // };
 
         this.pokemonDuJoueurActifChangeListener = (obsPokemon, oldPkmn, newPkmn) -> { // obsPokemon for clarity
             // This listener is on the joueurActif.pokemonActifProperty()
@@ -155,10 +154,10 @@ public class VueJoueurActif extends VBox {
                 if (oldEnergieMap != null && this.energiePokemonActifListener != null) {
                     oldEnergieMap.removeListener(this.energiePokemonActifListener);
                 }
-                // Detach card listener
-                if (oldPkmn.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                    oldPkmn.cartePokemonProperty().removeListener(this.carteDuPokemonActifListener);
-                }
+                // Détachement de carteDuPokemonActifListener RETIRÉ
+                // if (oldPkmn.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
+                //    oldPkmn.cartePokemonProperty().removeListener(this.carteDuPokemonActifListener);
+                // }
             }
 
             placerPokemonActif(); // Met à jour l'affichage (nom, etc.) pour le newPkmn
@@ -170,10 +169,10 @@ public class VueJoueurActif extends VBox {
                 if (newEnergieMap != null && this.energiePokemonActifListener != null) {
                     newEnergieMap.addListener(this.energiePokemonActifListener);
                 }
-                // Attach card listener
-                if (newPkmn.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                    newPkmn.cartePokemonProperty().addListener(this.carteDuPokemonActifListener);
-                }
+                // Attachement de carteDuPokemonActifListener RETIRÉ
+                // if (newPkmn.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
+                //    newPkmn.cartePokemonProperty().addListener(this.carteDuPokemonActifListener);
+                // }
             } else {
                 // No new active Pokemon, ensure energy display is cleared
                 if (energiePokemonActifHBox != null) {
@@ -203,10 +202,10 @@ public class VueJoueurActif extends VBox {
                         if (oldEnergieMap != null && this.energiePokemonActifListener != null) {
                             oldEnergieMap.removeListener(this.energiePokemonActifListener);
                         }
-                        // Détacher carteDuPokemonActifListener
-                        if (oldActivePkmnInstance.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                            oldActivePkmnInstance.cartePokemonProperty().removeListener(this.carteDuPokemonActifListener);
-                        }
+                        // Détachement de carteDuPokemonActifListener RETIRÉ
+                        // if (oldActivePkmnInstance.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
+                        //    oldActivePkmnInstance.cartePokemonProperty().removeListener(this.carteDuPokemonActifListener);
+                        // }
                     }
                 }
                 if (oldJoueur.getMain() != null) {
@@ -234,10 +233,10 @@ public class VueJoueurActif extends VBox {
                         if (newEnergieMap != null && this.energiePokemonActifListener != null) {
                             newEnergieMap.addListener(this.energiePokemonActifListener);
                         }
-                        // Attacher carteDuPokemonActifListener au nouveau Pokémon actif
-                        if (newActivePkmnInstance.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                             newActivePkmnInstance.cartePokemonProperty().addListener(this.carteDuPokemonActifListener);
-                        }
+                        // Attachement de carteDuPokemonActifListener RETIRÉ
+                        // if (newActivePkmnInstance.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
+                        //     newActivePkmnInstance.cartePokemonProperty().addListener(this.carteDuPokemonActifListener);
+                        // }
                     }
                 }
                 if (newJoueur.getMain() != null) {
