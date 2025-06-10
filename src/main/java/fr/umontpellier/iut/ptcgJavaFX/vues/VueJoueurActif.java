@@ -24,7 +24,10 @@ import javafx.scene.Node; // Added for mettreAJourStyleSelectionPokemon
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added for mettreAJourStyleSelectionPokemon
 
 import java.io.IOException;
+import java.util.ArrayList; // Added for listener cleanup
+import java.util.HashMap; // Added for new Maps
 import java.util.List; // Added for type in MapChangeListener
+import java.util.Map; // Added for new Maps
 
 public class VueJoueurActif extends VBox {
 
@@ -47,7 +50,11 @@ public class VueJoueurActif extends VBox {
     private ChangeListener<IPokemon> pokemonDuJoueurActifChangeListener;
     private ListChangeListener<ICarte> mainDuJoueurActifChangeListener;
     private ListChangeListener<IPokemon> changementBancJoueur;
-    private MapChangeListener<String, List<String>> energiePokemonActifListener; // Added
+    private MapChangeListener<String, List<String>> energiePokemonActifListener; // For active Pokemon
+
+    // Fields for benched Pokemon energy listeners
+    private final Map<IPokemon, MapChangeListener<String, List<String>>> benchEnergyListeners = new HashMap<>();
+    private final Map<IPokemon, HBox> benchPokemonEnergyUI = new HashMap<>();
 
 
     @FXML
@@ -57,6 +64,9 @@ public class VueJoueurActif extends VBox {
     // private IJeu jeu; // Ensure this field is present
 
     public VueJoueurActif() { // No-arg constructor
+        // Initialize maps here if they were not final or directly initialized
+        // benchEnergyListeners = new HashMap<>();
+        // benchPokemonEnergyUI = new HashMap<>();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueJoueurActif.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -335,7 +345,7 @@ public class VueJoueurActif extends VBox {
         Button boutonPokemonBanc = new Button(pokemon.getCartePokemon().getNom());
         // boutonPokemonBanc.getStyleClass().add("text-18px"); // Replaced by setAll
         boutonPokemonBanc.getStyleClass().setAll("card-button", "text-18px");
-        boutonPokemonBanc.setOnAction(event -> { // event an lieu de actionEvent pour consistence avec l'autre fichier
+        boutonPokemonBanc.setOnAction(event -> {
             if (this.jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
                 this.jeu.carteSurTerrainCliquee(pokemon.getCartePokemon().getId());
             } else {
@@ -345,23 +355,31 @@ public class VueJoueurActif extends VBox {
 
         VBox pokemonCardContainer = new VBox(2);
         pokemonCardContainer.setAlignment(Pos.CENTER);
+        // Conserver l'ID de la carte pour la sélection de style, mais la clé des maps sera IPokemon
         if (pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
-            pokemonCardContainer.setUserData(pokemon.getCartePokemon().getId()); // Store card ID
+            pokemonCardContainer.setUserData(pokemon.getCartePokemon().getId());
         }
-        pokemonCardContainer.getStyleClass().add("pokemon-node-display"); // Added style class
+        pokemonCardContainer.getStyleClass().add("pokemon-node-display");
 
         HBox energieBancPokemonHBox = new HBox(2);
         energieBancPokemonHBox.setAlignment(Pos.CENTER);
 
-        ObservableMap<String, List<String>> energieMap = pokemon.energieProperty();
-        if (energieMap != null) {
-            for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
-                // energyLabel.setStyle("-fx-font-size: 9px; -fx-padding: 1px; -fx-border-color: lightgray;"); // Removed inline style
-                energyLabel.getStyleClass().add("energy-tag"); // Added style class
-                energieBancPokemonHBox.getChildren().add(energyLabel);
-            }
+        // Populate energy for the first time
+        populateBenchPokemonEnergy(energieBancPokemonHBox, pokemon);
+
+        // Store HBox for future updates by listener
+        this.benchPokemonEnergyUI.put(pokemon, energieBancPokemonHBox);
+
+        // Create and attach listener for energy changes
+        if (pokemon != null && pokemon.energieProperty() != null) {
+            MapChangeListener<String, List<String>> energyListener = change -> {
+                // When energy changes, re-populate the specific HBox for this pokemon
+                populateBenchPokemonEnergy(this.benchPokemonEnergyUI.get(pokemon), pokemon);
+            };
+            pokemon.energieProperty().addListener(energyListener);
+            this.benchEnergyListeners.put(pokemon, energyListener); // Store listener for cleanup
         }
+
         pokemonCardContainer.getChildren().addAll(boutonPokemonBanc, energieBancPokemonHBox);
         return pokemonCardContainer;
     }
@@ -372,6 +390,17 @@ public class VueJoueurActif extends VBox {
     }
 
     public void reconstruirePanneauBancComplet() {
+        // Clean up old listeners and UI references for the bench
+        for (Map.Entry<IPokemon, MapChangeListener<String, List<String>>> entry : this.benchEnergyListeners.entrySet()) {
+            IPokemon oldPokemon = entry.getKey();
+            MapChangeListener<String, List<String>> listener = entry.getValue();
+            if (oldPokemon != null && oldPokemon.energieProperty() != null && listener != null) {
+                oldPokemon.energieProperty().removeListener(listener);
+            }
+        }
+        this.benchEnergyListeners.clear();
+        this.benchPokemonEnergyUI.clear();
+
         if (panneauBancHBox == null) return;
         panneauBancHBox.getChildren().clear();
         IJoueur joueurCourant = joueurActifProperty.get();
@@ -396,6 +425,19 @@ public class VueJoueurActif extends VBox {
                     }
                 });
                 panneauBancHBox.getChildren().add(emptySlotButton);
+            }
+        }
+    }
+
+    private void populateBenchPokemonEnergy(HBox energyHBoxContainer, IPokemon pokemon) {
+        if (energyHBoxContainer == null || pokemon == null) return;
+        energyHBoxContainer.getChildren().clear();
+        ObservableMap<String, List<String>> energieMap = pokemon.energieProperty();
+        if (energieMap != null) {
+            for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
+                energyLabel.getStyleClass().add("energy-tag");
+                energyHBoxContainer.getChildren().add(energyLabel);
             }
         }
     }
