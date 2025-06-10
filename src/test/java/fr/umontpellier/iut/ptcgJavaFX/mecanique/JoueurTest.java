@@ -3,8 +3,9 @@ package fr.umontpellier.iut.ptcgJavaFX.mecanique;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.energie.EnergieFeu;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Salameche;
-import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Reptincel; // Added import
-import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Added import for casting if needed, and for reptincelCarte field
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Reptincel;
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon;
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Roucool; // Added import
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.TourNormal;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.ChoixPokemon; // Added import
 
@@ -23,8 +24,9 @@ public class JoueurTest {
     private Joueur joueur1;
     private Pokemon pokemonJ1Actif; // This will be Salameche
     private EnergieFeu energieFeuEnMain;
-    private CartePokemon reptincelCarte; // Added field
-    // private Pokemon salamecheSurBanc; // Not used in these specific tests yet
+    private CartePokemon reptincelCarte;
+    private CartePokemon roucoolCarte; // Added field
+    private Pokemon roucoolSurBanc; // Added field
 
     @BeforeEach
     void setUp() {
@@ -72,6 +74,16 @@ public class JoueurTest {
 
         // S'assurer que le Pokémon actif peut évoluer (a été "en jeu" au moins un tour)
         this.pokemonJ1Actif.onFinTour(joueur1); // Salameche actif peut maintenant évoluer
+
+        // Préparer un Roucool sur le banc qui peut évoluer (mais pas en Reptincel)
+        this.roucoolCarte = new Roucool();
+        this.roucoolSurBanc = new Pokemon(this.roucoolCarte);
+        if (!joueur1.getIndicesDeBancVides().isEmpty()) {
+            joueur1.setPokemonBanc(this.roucoolSurBanc, Integer.parseInt(joueur1.getIndicesDeBancVides().get(0)));
+            this.roucoolSurBanc.onFinTour(joueur1); // Il peut évoluer (en Roucoups)
+        } else {
+            fail("Banc de Joueur 1 est plein, ne peut pas placer roucoolSurBanc pour le test.");
+        }
     }
 
     @Test
@@ -225,5 +237,88 @@ public class JoueurTest {
         assertTrue(joueur1.getEtatCourant() instanceof ChoixPokemon, "Le joueur devrait rester en état ChoixPokemon.");
         // On pourrait aussi vérifier l'instruction, e.g.
         // assertTrue(jeu.instructionProperty().get().contains("ne peut pas évoluer ce tour-ci"));
+    }
+
+    @Test
+    void testEvolutionImpossibleMauvaisePreEvolution() {
+        assertTrue(reptincelCarte.peutJouer(joueur1), "Reptincel devrait être jouable car il y a un Salameche apte.");
+        assertTrue(roucoolSurBanc.getPeutEvoluer(), "Roucool sur le banc devrait pouvoir évoluer (en Roucoups, pas Reptincel).");
+        int mainInitialSize = joueur1.getMain().size(); // Main contient energieFeuEnMain et reptincelCarte
+
+        // 1. Sélectionner Reptincel de la main
+        jeu.uneCarteDeLaMainAEteChoisie(reptincelCarte.getId());
+        assertEquals(reptincelCarte, joueur1.carteEnJeuProperty().get(), "Reptincel devrait être la carte en jeu.");
+        assertTrue(joueur1.getEtatCourant() instanceof fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.ChoixPokemon, "Le joueur devrait être en état ChoixPokemon.");
+
+        // 2. Vérifier que Roucool n'est pas une cible valide pour Reptincel
+        List<String> ciblesPossiblesPourReptincel = reptincelCarte.getChoixPossibles(joueur1);
+        assertFalse(ciblesPossiblesPourReptincel.contains(roucoolCarte.getId()), "Roucool ne devrait pas être une cible possible pour Reptincel.");
+        assertTrue(ciblesPossiblesPourReptincel.contains(pokemonJ1Actif.getCartePokemon().getId()), "Salameche actif DEVRAIT être une cible possible.");
+
+        // 3. Tenter de sélectionner Roucool comme cible
+        ((fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.ChoixPokemon) joueur1.getEtatCourant()).carteChoisie(roucoolCarte.getId());
+
+        // Vérifications : l'évolution ne doit pas avoir eu lieu
+        assertSame(roucoolCarte, roucoolSurBanc.getCartePokemon(), "Roucool sur le banc ne doit pas avoir évolué.");
+        assertEquals(reptincelCarte, joueur1.carteEnJeuProperty().get(), "Reptincel devrait toujours être la carte en jeu (action non résolue car cible invalide).");
+        assertTrue(joueur1.getEtatCourant() instanceof fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.ChoixPokemon, "Le joueur devrait rester en état ChoixPokemon.");
+        // Reptincel a été jouée de la main (et est maintenant dans carteEnJeu)
+        assertEquals(mainInitialSize - 1, joueur1.getMain().size(), "Reptincel a été jouée de la main.");
+        assertFalse(joueur1.getMain().contains(reptincelCarte), "Reptincel ne devrait plus être en main.");
+    }
+
+    @Test
+    void testEvolutionConserveDegatsEtEnergies() {
+        // Préparer Salameche actif
+        assertTrue(pokemonJ1Actif.getPeutEvoluer(), "Salameche actif doit pouvoir évoluer.");
+
+        // Retirer l'énergie mise dans setUp pour ce test spécifique pour contrôler l'énergie exacte
+        joueur1.getMain().remove(energieFeuEnMain); // Supposons qu'elle était là
+        EnergieFeu energieSpecifique = new EnergieFeu(); // Utiliser une nouvelle instance pour ce test
+
+        pokemonJ1Actif.ajouterCarte(energieSpecifique);
+        pokemonJ1Actif.ajouterDegats(20);
+
+        assertEquals(20, pokemonJ1Actif.getDegats(), "Salameche doit avoir 20 dégâts.");
+        assertEquals(1, pokemonJ1Actif.getEnergie().getOrDefault(fr.umontpellier.iut.ptcgJavaFX.mecanique.Type.FEU, 0).intValue(), "Salameche doit avoir 1 énergie Feu.");
+        int cartesAvantEvo = pokemonJ1Actif.getCartes().size(); // Salameche + Energie
+
+        // Évolution
+        jeu.uneCarteDeLaMainAEteChoisie(reptincelCarte.getId());
+        // L'ID du Pokémon actif (Salameche) est nécessaire pour carteSurTerrainCliquee et uneCarteComplementaireAEteChoisie
+        String salamecheActifId = pokemonJ1Actif.getCartePokemon().getId();
+        jeu.carteSurTerrainCliquee(salamecheActifId);
+        // Attention: uneCarteComplementaireAEteChoisie est appelée par l'UI, ici on simule l'action de l'état ChoixPokemon
+        // qui serait déclenché par carteSurTerrainCliquee si la logique du jeu est bien chaînée.
+        // Si on teste l'état directement, on appellerait etat.carteChoisie(salamecheActifId)
+        // Ici, on teste Jeu.uneCarteComplementaireAEteChoisie comme demandé par l'architecture des vues.
+        ((fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.ChoixPokemon) joueur1.getEtatCourant()).carteChoisie(salamecheActifId);
+
+
+        // Vérifications sur le Pokémon évolué (qui est toujours la même instance pokemonJ1Actif)
+        assertSame(reptincelCarte, pokemonJ1Actif.getCartePokemon(), "Pokémon devrait être Reptincel.");
+        assertEquals(20, pokemonJ1Actif.getDegats(), "Reptincel devrait conserver les 20 dégâts.");
+        assertEquals(1, pokemonJ1Actif.getEnergie().getOrDefault(fr.umontpellier.iut.ptcgJavaFX.mecanique.Type.FEU, 0).intValue(), "Reptincel devrait conserver l'énergie Feu.");
+        assertEquals(cartesAvantEvo + 1, pokemonJ1Actif.getCartes().size(), "Reptincel (la carte) doit avoir été ajoutée aux cartes du Pokémon.");
+        assertTrue(pokemonJ1Actif.getCartes().contains(energieSpecifique), "L'énergie doit toujours être attachée.");
+        assertTrue(pokemonJ1Actif.getCartes().contains(reptincelCarte), "Reptincel doit être dans les cartes.");
+    }
+
+    @Test
+    void testEvolutionGueritStatuts() {
+        // Préparer Salameche actif
+        assertTrue(pokemonJ1Actif.getPeutEvoluer(), "Salameche actif doit pouvoir évoluer.");
+        pokemonJ1Actif.setEstBrule();
+        assertTrue(pokemonJ1Actif.estBruleProperty().get(), "Salameche doit être Brûlé.");
+
+        // Évolution
+        jeu.uneCarteDeLaMainAEteChoisie(reptincelCarte.getId());
+        String salamecheActifId = pokemonJ1Actif.getCartePokemon().getId();
+        jeu.carteSurTerrainCliquee(salamecheActifId);
+        ((fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.ChoixPokemon) joueur1.getEtatCourant()).carteChoisie(salamecheActifId);
+
+        // Vérifications
+        assertSame(reptincelCarte, pokemonJ1Actif.getCartePokemon(), "Pokémon devrait être Reptincel.");
+        assertFalse(pokemonJ1Actif.estBruleProperty().get(), "Reptincel ne devrait plus être Brûlé après évolution.");
     }
 }
