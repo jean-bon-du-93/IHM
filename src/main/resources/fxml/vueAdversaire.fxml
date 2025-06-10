@@ -6,9 +6,9 @@
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.scene.layout.VBox"
-         spacing="8" <!-- Adjusted spacing -->
+         spacing="8"
          stylesheets="@../css/style.css"
-         styleClass="opponent-area" <!-- Existing style for background/padding -->
+         styleClass="opponent-area"
          xmlns:fx="http://javafx.com/fxml/1"
          xmlns="http://javafx.com/javafx/11.0.1">
 
@@ -18,7 +18,6 @@
         </VBox.margin>
     </Label>
 
-    <!-- Opponent's Active Pokemon Area -->
     <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
     <Label fx:id="pokemonActifAdversaireDisplay" styleClass="opponent-card-display text-18px" text="Pokemon Actif Adv." minHeight="60"/> <!-- Min height for card display -->
     <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
@@ -27,7 +26,6 @@
         </VBox.margin>
     </HBox>
 
-    <!-- Opponent's Hand Area -->
     <Label text="Main de l'adversaire:" styleClass="text-18px"/>
     <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT" minHeight="50"> <!-- Min height for card backs -->
         <VBox.margin>
@@ -35,7 +33,6 @@
         </VBox.margin>
     </HBox>
 
-    <!-- Opponent's Bench Area -->
     <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
     <HBox fx:id="panneauBancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70"> <!-- Min height for bench cards -->
         <VBox.margin>
@@ -43,11 +40,11 @@
         </VBox.margin>
     </HBox>
 
-    <!-- Opponent's Counts Area -->
     <HBox spacing="15" alignment="CENTER_LEFT">
         <padding>
             <Insets top="5.0" />
         </padding>
+        <Label fx:id="mainAdversaireLabel" styleClass="text-18px" text="Main: X"/>
         <Label fx:id="deckAdversaireLabel" styleClass="text-18px" text="Deck: Y"/>
         <Label fx:id="defausseAdversaireLabel" styleClass="text-18px" text="Défausse: Z"/>
         <Label fx:id="prixAdversaireLabel" styleClass="text-18px" text="Prix: P"/>
