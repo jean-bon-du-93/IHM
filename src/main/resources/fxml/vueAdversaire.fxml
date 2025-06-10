@@ -19,7 +19,7 @@
     </Label>
 
     <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
-    <Label fx:id="pokemonActifAdversaireDisplay" styleClass="opponent-card-display text-18px" text="Pokemon Actif Adv." minHeight="60"/> <!-- Min height for card display -->
+    <Button fx:id="opponentPokemonActifButton" text="Pokemon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
     <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
         <VBox.margin>
             <Insets bottom="10.0" />
@@ -34,7 +34,7 @@
     </HBox>
 
     <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
-    <HBox fx:id="panneauBancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70"> <!-- Min height for bench cards -->
+    <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70"> <!-- Min height for bench cards -->
         <VBox.margin>
             <Insets bottom="10.0" />
         </VBox.margin>

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito; // Added import
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,10 +42,10 @@ class VueAdversaireTest {
 
     private VueAdversaire vueAdversaire;
 
-    @BeforeAll
-    static void initToolkit() {
-        new JFXPanel(); // Initializes JavaFX environment
-    }
+    // @BeforeAll
+    // static void initToolkit() {
+    //     new JFXPanel(); // Initializes JavaFX environment
+    // }
 
     @BeforeEach
     void setUp() throws InterruptedException {
@@ -68,10 +69,12 @@ class VueAdversaireTest {
         // Mock active Pokemon details
         when(mockOpponentActivePokemon.getCartePokemon()).thenReturn(mockOpponentActivePokemonCarte);
         when(mockOpponentActivePokemonCarte.getNom()).thenReturn("OpponentPika");
+        when(mockOpponentActivePokemonCarte.getId()).thenReturn("opponentActiveCardId_test"); // Added mock
 
         // Mock bench Pokemon details (optional for initial setup, but good for bench test)
         when(mockOpponentBenchPokemon.getCartePokemon()).thenReturn(mockOpponentBenchPokemonCarte);
         when(mockOpponentBenchPokemonCarte.getNom()).thenReturn("OpponentMagikarp");
+        when(mockOpponentBenchPokemonCarte.getId()).thenReturn("opponentBenchCardId_test"); // Added mock
         // Mock the energieProperty for benched pokemon as it's accessed in creerPokemonBancNode
         when(mockOpponentBenchPokemon.energieProperty()).thenReturn(FXCollections.observableHashMap());
 
@@ -87,7 +90,7 @@ class VueAdversaireTest {
     @Test
     void testFxmlLoadingAndFieldInjection() throws InterruptedException { // Added throws InterruptedException
         assertNotNull(vueAdversaire.nomAdversaireLabel, "nomAdversaireLabel should be injected");
-        assertNotNull(vueAdversaire.pokemonActifAdversaireDisplay, "pokemonActifAdversaireDisplay should be injected");
+        assertNotNull(vueAdversaire.opponentPokemonActifButton, "opponentPokemonActifButton should be injected"); // Changed field name
         assertNotNull(vueAdversaire.bancAdversaireHBox, "bancAdversaireHBox should be injected");
         assertNotNull(vueAdversaire.mainAdversaireLabel, "mainAdversaireLabel should be injected");
         assertNotNull(vueAdversaire.deckAdversaireLabel, "deckAdversaireLabel should be injected");
@@ -99,7 +102,7 @@ class VueAdversaireTest {
     void testInitialDisplayCountsAndName() throws InterruptedException { // Added throws InterruptedException
         assertEquals("Test Opponent", vueAdversaire.nomAdversaireLabel.getText());
         // Active Pokemon initially null
-        assertEquals("Aucun", vueAdversaire.pokemonActifAdversaireDisplay.getText(), "Initial active Pokemon should be 'Aucun'");
+        assertEquals("Aucun", vueAdversaire.opponentPokemonActifButton.getText(), "Initial active Pokemon should be 'Aucun'"); // Changed field name
 
         // Card counts
         opponentHandList.add(mockOpponentActivePokemonCarte); // Add 1 card to hand
@@ -125,13 +128,13 @@ class VueAdversaireTest {
             opponentActivePokemonProperty.set(mockOpponentActivePokemon);
         });
         Thread.sleep(500);
-        assertEquals("OpponentPika", vueAdversaire.pokemonActifAdversaireDisplay.getText());
+        assertEquals("OpponentPika", vueAdversaire.opponentPokemonActifButton.getText()); // Changed field name
 
         Platform.runLater(() -> {
             opponentActivePokemonProperty.set(null); // Remove active Pokemon
         });
         Thread.sleep(500);
-        assertEquals("Aucun", vueAdversaire.pokemonActifAdversaireDisplay.getText());
+        assertEquals("Aucun", vueAdversaire.opponentPokemonActifButton.getText()); // Changed field name
     }
 
     @Test
@@ -174,5 +177,23 @@ class VueAdversaireTest {
         // Optionally, check the label text if needed, e.g.
         // assertTrue(labelNode instanceof javafx.scene.control.Label);
         // assertEquals("OpponentMagikarp", ((javafx.scene.control.Label) labelNode).getText());
+    }
+
+    @Test
+    void testOpponentActivePokemonClickActionShouldTriggerJeuInteraction() {
+        // This test defines that a future click handler for the opponent's active Pokemon
+        // in VueAdversaire.java should ultimately call uneCarteDeLaMainAEteChoisie
+        // on the IJeu instance with the specific card ID.
+        // This test WILL FAIL until that functionality is implemented.
+        Mockito.verify(mockJeu).uneCarteDeLaMainAEteChoisie("opponentActiveCardId_test");
+    }
+
+    @Test
+    void testOpponentBenchedPokemonClickActionShouldTriggerJeuInteraction() {
+        // This test defines that a future click handler for an opponent's benched Pokemon
+        // in VueAdversaire.java should ultimately call uneCarteDeLaMainAEteChoisie
+        // on the IJeu instance with the specific card ID.
+        // This test WILL FAIL until that functionality is implemented.
+        Mockito.verify(mockJeu).uneCarteDeLaMainAEteChoisie("opponentBenchCardId_test");
     }
 }
