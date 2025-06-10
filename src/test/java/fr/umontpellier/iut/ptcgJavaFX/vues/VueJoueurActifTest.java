@@ -58,14 +58,14 @@ class VueJoueurActifTest {
         bancDuJoueurList = FXCollections.observableArrayList();
 
         // Configure mock IJoueur properties
-        when(mockJoueurActif.pokemonActifProperty()).thenReturn(pokemonActifPropertyJoueur);
-        when(mockJoueurActif.getMain()).thenReturn(mainDuJoueurList);
-        when(mockJoueurActif.getBanc()).thenReturn(bancDuJoueurList);
+        when(mockJoueurActif.pokemonActifProperty()).thenReturn((SimpleObjectProperty)pokemonActifPropertyJoueur);
+        when(mockJoueurActif.getMain()).thenReturn((ObservableList)mainDuJoueurList);
+        when(mockJoueurActif.getBanc()).thenReturn((ObservableList)bancDuJoueurList);
         when(mockJoueurActif.getNom()).thenReturn("Test Player");
 
 
         // Configure mock IJeu to return the joueurActifProperty
-        when(mockJeu.joueurActifProperty()).thenReturn(joueurActifPropertyJeu);
+        when(mockJeu.joueurActifProperty()).thenReturn((SimpleObjectProperty)joueurActifPropertyJeu);
 
         // Instantiate VueJoueurActif on FX thread
         Platform.runLater(() -> {
@@ -79,7 +79,7 @@ class VueJoueurActifTest {
     @Test
     void testFxmlLoadingAndFieldInjection() {
         assertNotNull(vueJoueurActif.nomDuJoueurLabel, "nomDuJoueurLabel should be injected");
-        assertNotNull(vueJoueurActif.pokemonActifLabel, "pokemonActifLabel should be injected");
+        assertNotNull(vueJoueurActif.pokemonActifButton, "pokemonActifButton should be injected");
         assertNotNull(vueJoueurActif.panneauMainHBox, "panneauMainHBox should be injected");
         assertNotNull(vueJoueurActif.panneauBancHBox, "panneauBancHBox should be injected");
         assertNotNull(vueJoueurActif.passerButton, "passerButton should be injected");
@@ -88,7 +88,7 @@ class VueJoueurActifTest {
     @Test
     void testInitialDisplayWithNoPlayer() {
         assertEquals("Pas de joueur actif", vueJoueurActif.nomDuJoueurLabel.getText());
-        assertEquals("Aucun Pokémon actif", vueJoueurActif.pokemonActifLabel.getText());
+        assertEquals("Aucun Pokémon actif", vueJoueurActif.pokemonActifButton.getText());
         assertTrue(vueJoueurActif.panneauMainHBox.getChildren().isEmpty());
         assertTrue(vueJoueurActif.panneauBancHBox.getChildren().isEmpty());
     }
@@ -114,8 +114,8 @@ class VueJoueurActifTest {
         });
         Thread.sleep(500); // Allow listeners to fire and UI to update
 
-        assertEquals("C'est au tour de : Test Player", vueJoueurActif.nomDuJoueurLabel.getText());
-        assertEquals("Pokémon actif : Pikachu", vueJoueurActif.pokemonActifLabel.getText());
+        assertEquals("Test Player", vueJoueurActif.nomDuJoueurLabel.getText());
+        assertEquals("Pikachu", vueJoueurActif.pokemonActifButton.getText());
         assertEquals(1, vueJoueurActif.panneauMainHBox.getChildren().size(), "Main should have 1 card");
         assertEquals("Potion", ((Button) vueJoueurActif.panneauMainHBox.getChildren().get(0)).getText());
         assertEquals(1, vueJoueurActif.panneauBancHBox.getChildren().size(), "Bench should have 1 Pokemon");

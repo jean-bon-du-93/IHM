@@ -31,15 +31,15 @@ public class VueJoueurActif extends VBox {
     private IJeu jeu;
     private ObjectProperty<IJoueur> joueurActifProperty;
     @FXML
-    private Label nomDuJoueurLabel;
+    Label nomDuJoueurLabel;
     @FXML
-    private Button pokemonActifButton;
+    Button pokemonActifButton;
     @FXML
-    private HBox energiePokemonActifHBox; // Added
+    HBox energiePokemonActifHBox; // Added
     @FXML
-    private HBox panneauMainHBox;
+    HBox panneauMainHBox;
     @FXML
-    private HBox panneauBancHBox;
+    HBox panneauBancHBox;
 
     private ChangeListener<IJoueur> joueurActifGlobalChangeListener;
     private ChangeListener<IPokemon> pokemonDuJoueurActifChangeListener;
@@ -49,7 +49,7 @@ public class VueJoueurActif extends VBox {
 
 
     @FXML
-    private Button passerButton;
+    Button passerButton;
 
     // IJeu jeu field should already exist from previous refactoring, ensure it's not final if it was.
     // private IJeu jeu; // Ensure this field is present
@@ -77,7 +77,7 @@ public class VueJoueurActif extends VBox {
     }
 
     @FXML
-    private void actionPasserParDefaut(ActionEvent event) {
+    void actionPasserParDefaut(ActionEvent event) { // Already package-private, no change needed, but keeping the search pattern to ensure this is the intended state
         System.out.println("Passer button clicked in VueJoueurActif, calling jeu.passerAEteChoisi()");
         if (this.jeu != null) {
             this.jeu.passerAEteChoisi();

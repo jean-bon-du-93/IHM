@@ -15,11 +15,11 @@ public class VueDuJeu extends VBox {
 
     private IJeu jeu; // Keep this to pass to VueJoueurActif
     @FXML
-    private Label instructionLabel;
+    Label instructionLabel;
     @FXML
-    private VueJoueurActif panneauDuJoueurActif;
+    VueJoueurActif panneauDuJoueurActif;
     @FXML
-    private VueAdversaire vueAdversaire;
+    VueAdversaire vueAdversaire;
 
     public VueDuJeu(IJeu jeu) {
         this.jeu = jeu;

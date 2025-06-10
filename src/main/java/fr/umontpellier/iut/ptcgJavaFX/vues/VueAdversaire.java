@@ -27,16 +27,16 @@ public class VueAdversaire extends VBox {
     private IJeu jeu;
     private IJoueur adversaire;
 
-    @FXML private Label nomAdversaireLabel;
-    @FXML private Label pokemonActifAdversaireDisplay; // Renamed
-    @FXML private HBox energiePokemonActifAdversaireHBox; // Added
-    @FXML private HBox bancAdversaireHBox;
-    @FXML private HBox panneauMainAdversaireHBox; // Added
+    @FXML Label nomAdversaireLabel;
+    @FXML Label pokemonActifAdversaireDisplay; // Renamed
+    @FXML HBox energiePokemonActifAdversaireHBox; // Added
+    @FXML HBox bancAdversaireHBox;
+    @FXML HBox panneauMainAdversaireHBox; // Added
     // mainAdversaireLabel is still used for count, but now part of a different logical group in FXML
-    @FXML private Label mainAdversaireLabel;
-    @FXML private Label deckAdversaireLabel;
-    @FXML private Label defausseAdversaireLabel;
-    @FXML private Label prixAdversaireLabel;
+    @FXML Label mainAdversaireLabel;
+    @FXML Label deckAdversaireLabel;
+    @FXML Label defausseAdversaireLabel;
+    @FXML Label prixAdversaireLabel;
 
     // Listeners to update UI when properties of 'adversaire' change
     private ChangeListener<IPokemon> pokemonActifListener;

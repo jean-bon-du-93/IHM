@@ -9,6 +9,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
+import javafx.scene.Node;
+import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,9 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,12 +58,12 @@ class VueAdversaireTest {
 
         // Setup mocks for IJoueur methods
         when(mockOpponent.getNom()).thenReturn("Test Opponent");
-        when(mockOpponent.pokemonActifProperty()).thenReturn(opponentActivePokemonProperty);
-        when(mockOpponent.getBanc()).thenReturn(opponentBenchList); // Returns ObservableList
-        when(mockOpponent.getMain()).thenReturn(opponentHandList); // Returns ObservableList
-        when(mockOpponent.piocheProperty()).thenReturn(opponentDeckList); // Returns ObservableList (or ListProperty)
-        when(mockOpponent.defausseProperty()).thenReturn(opponentDiscardList);
-        when(mockOpponent.recompensesProperty()).thenReturn(opponentPrizesList);
+        when(mockOpponent.pokemonActifProperty()).thenReturn((SimpleObjectProperty)opponentActivePokemonProperty);
+        when(mockOpponent.getBanc()).thenReturn((ObservableList)opponentBenchList); // Returns ObservableList
+        when(mockOpponent.getMain()).thenReturn((ObservableList)opponentHandList); // Returns ObservableList
+        when(mockOpponent.piocheProperty()).thenReturn((ObservableList)opponentDeckList); // Returns ObservableList (or ListProperty)
+        when(mockOpponent.defausseProperty()).thenReturn((ObservableList)opponentDiscardList);
+        when(mockOpponent.recompensesProperty()).thenReturn((ObservableList)opponentPrizesList);
 
         // Mock active Pokemon details
         when(mockOpponentActivePokemon.getCartePokemon()).thenReturn(mockOpponentActivePokemonCarte);
@@ -85,9 +85,9 @@ class VueAdversaireTest {
     }
 
     @Test
-    void testFxmlLoadingAndFieldInjection() {
+    void testFxmlLoadingAndFieldInjection() throws InterruptedException { // Added throws InterruptedException
         assertNotNull(vueAdversaire.nomAdversaireLabel, "nomAdversaireLabel should be injected");
-        assertNotNull(vueAdversaire.pokemonActifAdversaireLabel, "pokemonActifAdversaireLabel should be injected");
+        assertNotNull(vueAdversaire.pokemonActifAdversaireDisplay, "pokemonActifAdversaireDisplay should be injected");
         assertNotNull(vueAdversaire.bancAdversaireHBox, "bancAdversaireHBox should be injected");
         assertNotNull(vueAdversaire.mainAdversaireLabel, "mainAdversaireLabel should be injected");
         assertNotNull(vueAdversaire.deckAdversaireLabel, "deckAdversaireLabel should be injected");
@@ -96,10 +96,10 @@ class VueAdversaireTest {
     }
 
     @Test
-    void testInitialDisplayCountsAndName() {
+    void testInitialDisplayCountsAndName() throws InterruptedException { // Added throws InterruptedException
         assertEquals("Test Opponent", vueAdversaire.nomAdversaireLabel.getText());
         // Active Pokemon initially null
-        assertEquals("Aucun", vueAdversaire.pokemonActifAdversaireLabel.getText(), "Initial active Pokemon should be 'Aucun'");
+        assertEquals("Aucun", vueAdversaire.pokemonActifAdversaireDisplay.getText(), "Initial active Pokemon should be 'Aucun'");
 
         // Card counts
         opponentHandList.add(mockOpponentActivePokemonCarte); // Add 1 card to hand
@@ -125,25 +125,54 @@ class VueAdversaireTest {
             opponentActivePokemonProperty.set(mockOpponentActivePokemon);
         });
         Thread.sleep(500);
-        assertEquals("OpponentPika", vueAdversaire.pokemonActifAdversaireLabel.getText());
+        assertEquals("OpponentPika", vueAdversaire.pokemonActifAdversaireDisplay.getText());
 
         Platform.runLater(() -> {
             opponentActivePokemonProperty.set(null); // Remove active Pokemon
         });
         Thread.sleep(500);
-        assertEquals("Aucun", vueAdversaire.pokemonActifAdversaireLabel.getText());
+        assertEquals("Aucun", vueAdversaire.pokemonActifAdversaireDisplay.getText());
     }
 
     @Test
-    void testBenchDisplaySimplified() throws InterruptedException {
-        assertTrue(vueAdversaire.bancAdversaireHBox.getChildren().isEmpty(), "Bench should initially be empty");
+    void testOpponentBenchIsVisibleAndShowsPokemon() throws InterruptedException {
+        // 1. Verify that vueAdversaire.bancAdversaireHBox is not null after setup.
+        assertNotNull(vueAdversaire.bancAdversaireHBox, "Opponent bench HBox should not be null after setup");
 
+        // 2. Add mockOpponentBenchPokemon to the opponentBenchList.
         Platform.runLater(() -> {
-            opponentBenchList.add(mockOpponentBenchPokemon); // Add one Pokemon to bench
+            opponentBenchList.add(mockOpponentBenchPokemon);
         });
-        Thread.sleep(500); // Allow listener to process and update UI
 
-        assertEquals(1, vueAdversaire.bancAdversaireHBox.getChildren().size(), "Bench HBox should have 1 child (VBox container)");
-        // Further checks could inspect the child node, e.g., the text of the Label within it.
+        // 3. Use Platform.runLater to trigger the UI update and Thread.sleep(500) to wait.
+        Thread.sleep(500); // Wait for UI update
+
+        // 4. Assert that vueAdversaire.bancAdversaireHBox.isVisible() is true.
+        assertTrue(vueAdversaire.bancAdversaireHBox.isVisible(), "Opponent bench HBox should be visible");
+
+        // 5. Assert that vueAdversaire.bancAdversaireHBox.getChildren() is not empty.
+        assertFalse(vueAdversaire.bancAdversaireHBox.getChildren().isEmpty(), "Opponent bench HBox should have children after adding a Pokemon");
+
+        // 6. Get the first child node from bancAdversaireHBox.getChildren().
+        Node childNode = vueAdversaire.bancAdversaireHBox.getChildren().get(0);
+
+        // 7. Assert that this child node is not null and childNode.isVisible() is true.
+        assertNotNull(childNode, "Child node (pokemon VBox) in bench should not be null");
+        assertTrue(childNode.isVisible(), "Child node (pokemon VBox) in bench should be visible");
+
+        // 8. Cast the child node to javafx.scene.layout.VBox.
+        assertTrue(childNode instanceof VBox, "Child node should be an instance of VBox");
+        VBox pokemonNodeVBox = (VBox) childNode;
+
+        // 9. Assert that this VBox has children (e.g., the Pokémon name Label).
+        assertFalse(pokemonNodeVBox.getChildren().isEmpty(), "Pokemon VBox should have children (e.g., name Label)");
+
+        // 10. Get the first child of the VBox (expected to be a javafx.scene.control.Label) and assert that it is also visible.
+        Node labelNode = pokemonNodeVBox.getChildren().get(0);
+        assertNotNull(labelNode, "Label node in Pokemon VBox should not be null");
+        assertTrue(labelNode.isVisible(), "Label node in Pokemon VBox should be visible");
+        // Optionally, check the label text if needed, e.g.
+        // assertTrue(labelNode instanceof javafx.scene.control.Label);
+        // assertEquals("OpponentMagikarp", ((javafx.scene.control.Label) labelNode).getText());
     }
 }
