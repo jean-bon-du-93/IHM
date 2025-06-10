@@ -25,30 +25,31 @@ public class AttenteChoixPokemonPourEnergie extends EtatJoueur {
 
             if (newSelection != null) { // Une carte sur le terrain a été sélectionnée
                 Pokemon ciblePotentielle = null;
-                System.out.println("[AttenteChoixPokemonPourEnergie] Recherche de cible parmi les Pokémon du joueur " + getJoueur().getNom() + ":");
-                List<Pokemon> pokemonsDuJoueur = getJoueur().getListePokemonEnJeu(); // Corrected: getJoueur()
+                System.out.println("[AttenteChoixPokemonPourEnergie] Recherche de cible parmi les Pokémon du joueur " + joueur.getNom() + ":"); // getJoueur() -> joueur
+                List<Pokemon> pokemonsDuJoueur = joueur.getListePokemonEnJeu(); // getJoueur() -> joueur
                 System.out.println("[AttenteChoixPokemonPourEnergie] Nombre de Pokémon en jeu pour le joueur: " + pokemonsDuJoueur.size());
 
                 for (Pokemon p : pokemonsDuJoueur) {
-                    System.out.println("[AttenteChoixPokemonPourEnergie] Checking Pkmn: " + p.getNom() + " (CartePokemon ID: " + p.getCartePokemon().getId() + ")");
+                    // Utiliser getCartePokemon().getNom() pour l'affichage si p.getNom() n'existe pas ou n'est pas souhaité
+                    System.out.println("[AttenteChoixPokemonPourEnergie] Checking Pkmn: " + p.getCartePokemon().getNom() + " (CartePokemon ID: " + p.getCartePokemon().getId() + ")");
                     // newSelection est déjà vérifié non-null à ce stade
                     // p.getCartePokemon() doit aussi être non-null pour que le Pokémon soit valide en jeu
                     if (p.getCartePokemon() != null && newSelection.getId() != null && p.getCartePokemon().getId().equals(newSelection.getId())) {
                         ciblePotentielle = p;
-                        System.out.println("[AttenteChoixPokemonPourEnergie] Cible potentielle trouvée (par ID): " + ciblePotentielle.getNom());
+                        System.out.println("[AttenteChoixPokemonPourEnergie] Cible potentielle trouvée (par ID): " + ciblePotentielle.getCartePokemon().getNom()); // .getNom() -> .getCartePokemon().getNom()
                         break;
                     }
                 }
 
                 if (ciblePotentielle != null) {
-                    System.out.println("[AttenteChoixPokemonPourEnergie] Cible VALIDE trouvée: " + ciblePotentielle.getNom() + ". Attachement de " + this.energieAAttacher.getNom());
-                    getJoueur().retirerCarteMain(this.energieAAttacher); // Corrected: getJoueur()
+                    System.out.println("[AttenteChoixPokemonPourEnergie] Cible VALIDE trouvée: " + ciblePotentielle.getCartePokemon().getNom() + ". Attachement de " + this.energieAAttacher.getNom()); // .getNom() -> .getCartePokemon().getNom()
+                    joueur.retirerCarteMain(this.energieAAttacher); // getJoueur() -> joueur
                     ciblePotentielle.ajouterCarte(this.energieAAttacher);
-                    getJoueur().setAJoueEnergie(); // Corrected: getJoueur()
+                    joueur.setAJoueEnergie(); // getJoueur() -> joueur
 
                     cleanupListener();
-                    getJeu().instructionProperty().setValue(this.energieAAttacher.getNom() + " attachée à " + ciblePotentielle.getNom() + ". Choisissez une action.");
-                    getJoueur().setEtatCourant(new TourNormal(getJoueur())); // Corrected: getJoueur()
+                    getJeu().instructionProperty().setValue(this.energieAAttacher.getNom() + " attachée à " + ciblePotentielle.getCartePokemon().getNom() + ". Choisissez une action."); // .getNom() -> .getCartePokemon().getNom()
+                    joueur.setEtatCourant(new TourNormal(joueur)); // getJoueur() -> joueur (twice)
                     getJeu().carteSelectionneeProperty().set(null);
                 } else {
                     System.out.println("[AttenteChoixPokemonPourEnergie] Cible INVALIDE. newSelection: " + (newSelection != null ? newSelection.getNom() + " ID " + newSelection.getId() : "null"));

@@ -7,6 +7,7 @@ import fr.umontpellier.iut.ptcgJavaFX.IPokemon;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener; // Added import
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap; // For energy display
 import javafx.fxml.FXML;
