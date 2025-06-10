@@ -149,3 +149,12 @@
     /* Example: -fx-background-image: url("@../images/card_back_pattern.png"); (requires image) */
     /* For now, just a solid color. */
 }
+
+.pokemon-selectionne {
+    -fx-border-color: #FFD700; /* Or une couleur 'gold' ou jaune vif */
+    -fx-border-width: 3px;
+    -fx-border-style: solid;
+    -fx-effect: dropshadow(gaussian, rgba(255,215,0,0.5), 10, 0.3, 0, 0);
+    /* S'assurer que le style n'interfère pas négativement avec le style existant des card-button */
+    /* On peut avoir besoin d'ajuster les padding ou margins si la bordure cause des décalages */
+}

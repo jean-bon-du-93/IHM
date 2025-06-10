@@ -20,6 +20,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.Node; // Added for mettreAJourStyleSelectionPokemon
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added for mettreAJourStyleSelectionPokemon
 
 import java.io.IOException;
 import java.util.List; // Added for type in MapChangeListener
@@ -74,6 +76,15 @@ public class VueJoueurActif extends VBox {
     public void postInit() {
         initialiserProprietesEtListeners();
         lierAuJoueurActifDuJeu();
+
+        if (this.jeu != null && this.jeu instanceof fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) {
+            fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu jeuConcret = (fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) this.jeu;
+            jeuConcret.carteSelectionneeProperty().addListener((obs, oldSelection, newSelection) -> {
+                mettreAJourStyleSelectionPokemon(newSelection);
+            });
+            // Appel initial pour mise à jour au cas où une sélection existe déjà
+            mettreAJourStyleSelectionPokemon(jeuConcret.carteSelectionneeProperty().get());
+        }
     }
 
     @FXML
@@ -239,8 +250,17 @@ public class VueJoueurActif extends VBox {
 
     @FXML
     private void onPokemonActifButtonClick(ActionEvent event) {
-        System.out.println("pokemonActifButton clicked. Active Pokémon: " + (pokemonActifButton != null ? pokemonActifButton.getText() : "N/A") + ". Action to be defined.");
-        // Further actions to be defined based on game requirements.
+        if (this.jeu != null && this.joueurActifProperty != null) {
+            IJoueur joueurCourant = this.joueurActifProperty.get();
+            if (joueurCourant != null) {
+                IPokemon activePokemon = joueurCourant.pokemonActifProperty().get();
+                if (activePokemon != null && activePokemon.getCartePokemon() != null && activePokemon.getCartePokemon().getId() != null) {
+                    this.jeu.carteSurTerrainCliquee(activePokemon.getCartePokemon().getId());
+                } else {
+                    System.err.println("Clic sur Pokémon actif du joueur, mais pas de Pokémon/carte/ID trouvé.");
+                }
+            }
+        }
     }
 
     private Button creerBoutonCarte(ICarte carte) {
@@ -315,13 +335,19 @@ public class VueJoueurActif extends VBox {
         Button boutonPokemonBanc = new Button(pokemon.getCartePokemon().getNom());
         // boutonPokemonBanc.getStyleClass().add("text-18px"); // Replaced by setAll
         boutonPokemonBanc.getStyleClass().setAll("card-button", "text-18px");
-        boutonPokemonBanc.setOnAction(event -> {
-            System.out.println("Bouton Pokémon du banc cliqué : " + pokemon.getCartePokemon().getNom() + " (ID: " + pokemon.getCartePokemon().getId() + "). Action à définir.");
+        boutonPokemonBanc.setOnAction(event -> { // event an lieu de actionEvent pour consistence avec l'autre fichier
+            if (this.jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
+                this.jeu.carteSurTerrainCliquee(pokemon.getCartePokemon().getId());
+            } else {
+                System.err.println("Clic sur Pokémon de banc du joueur, mais pas de Pokémon/carte/ID trouvé.");
+            }
         });
 
         VBox pokemonCardContainer = new VBox(2);
         pokemonCardContainer.setAlignment(Pos.CENTER);
-        pokemonCardContainer.setUserData(pokemon); // Store pokemon for identification in updatePanneauBanc
+        if (pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
+            pokemonCardContainer.setUserData(pokemon.getCartePokemon().getId()); // Store card ID
+        }
         pokemonCardContainer.getStyleClass().add("pokemon-node-display"); // Added style class
 
         HBox energieBancPokemonHBox = new HBox(2);
@@ -370,6 +396,50 @@ public class VueJoueurActif extends VBox {
                     }
                 });
                 panneauBancHBox.getChildren().add(emptySlotButton);
+            }
+        }
+    }
+
+    private void mettreAJourStyleSelectionPokemon(Carte carteActuellementSelectionnee) {
+        String idCarteSelectionnee = (carteActuellementSelectionnee == null) ? null : carteActuellementSelectionnee.getId();
+
+        // Pokémon Actif
+        if (pokemonActifButton != null && joueurActifProperty != null && joueurActifProperty.get() != null) {
+            IJoueur joueurCourant = joueurActifProperty.get();
+            if (joueurCourant != null) {
+                IPokemon pkmnActif = joueurCourant.pokemonActifProperty().get();
+                if (pkmnActif != null && pkmnActif.getCartePokemon() != null && pkmnActif.getCartePokemon().getId() != null) {
+                    if (pkmnActif.getCartePokemon().getId().equals(idCarteSelectionnee)) {
+                        pokemonActifButton.getStyleClass().add("pokemon-selectionne");
+                    } else {
+                        pokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+                    }
+                } else { // Pas de Pokémon actif, s'assurer qu'il n'a pas le style
+                    pokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+                }
+            } else { // Pas de joueur courant, s'assurer que le bouton n'a pas le style
+                 pokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+            }
+        } else if (pokemonActifButton != null) { // S'assurer que le bouton est nettoyé si pas de joueur actif
+             pokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+        }
+
+
+        // Pokémon du Banc
+        if (panneauBancHBox != null) {
+            for (Node nodePokemonBanc : panneauBancHBox.getChildren()) {
+                // On a stocké l'ID sur le VBox (pokemonCardContainer)
+                if (nodePokemonBanc.getUserData() instanceof String) {
+                    String idCarteNode = (String) nodePokemonBanc.getUserData();
+                    if (idCarteNode.equals(idCarteSelectionnee)) {
+                        nodePokemonBanc.getStyleClass().add("pokemon-selectionne");
+                    } else {
+                        nodePokemonBanc.getStyleClass().removeAll("pokemon-selectionne");
+                    }
+                } else {
+                    // Cas des boutons "Vide" ou autres nœuds non-pokemon, s'assurer qu'ils n'ont pas le style
+                    nodePokemonBanc.getStyleClass().removeAll("pokemon-selectionne");
+                }
             }
         }
     }
