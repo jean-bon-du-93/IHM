@@ -5,10 +5,12 @@ import fr.umontpellier.iut.ptcgJavaFX.IJoueur;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJeu.EtatJeu;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJeu.InitialisationJoueurs;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.etatsJoueur.tournormal.VerificationPokemonAdversaire;
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added import
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleObjectProperty; // Added import (already present, but good to note)
+
 
 public class Jeu implements IJeu {
     /**
@@ -23,6 +25,10 @@ public class Jeu implements IJeu {
      * Instruction à afficher au joueur actif
      */
     private final ObjectProperty<String> instruction;
+
+    private Carte carteSelectionnee; // Added field
+    private final ObjectProperty<Carte> carteSelectionneeProperty = new SimpleObjectProperty<>(null); // Added field
+
     /**
      * Permet de savoir si le jeu est en initialisation ou si la partie a commencé
      */
@@ -289,4 +295,56 @@ public class Jeu implements IJeu {
         leJoueur.getEtatCourant().carteChoisie(cartecomplementaire);
     }
 
+    public ObjectProperty<Carte> carteSelectionneeProperty() { // Added getter
+        return carteSelectionneeProperty;
+    }
+
+    public Carte getCarteSelectionnee() { // Added getter
+        return carteSelectionnee;
+    }
+
+    @Override
+    public void carteSurTerrainCliquee(String idCarte) { // Added method implementation
+        Carte carteTrouvee = null;
+        Pokemon pokemonTrouve = null; // Utile si on veut stocker le Pokemon
+
+        for (Joueur joueur : joueurs) {
+            // Pokémon actif
+            Pokemon actif = joueur.getPokemonActif();
+            if (actif != null && actif.getCartePokemon() != null && actif.getCartePokemon().getId().equals(idCarte)) {
+                carteTrouvee = actif.getCartePokemon();
+                pokemonTrouve = actif;
+                break;
+            }
+            // Pokémon sur le banc
+            for (Pokemon pokemonBanc : joueur.getListePokemonDeBanc()) {
+                if (pokemonBanc.getCartePokemon() != null && pokemonBanc.getCartePokemon().getId().equals(idCarte)) {
+                    carteTrouvee = pokemonBanc.getCartePokemon();
+                    pokemonTrouve = pokemonBanc;
+                    break;
+                }
+            }
+            if (carteTrouvee != null) {
+                break;
+            }
+        }
+
+        if (carteTrouvee != null) {
+            // Pour l'instant, stockons la CartePokemon.
+            // Si on voulait stocker l'instance IPokemon, il faudrait changer le type de carteSelectionneeProperty.
+            if (this.carteSelectionnee == carteTrouvee) {
+                this.carteSelectionnee = null;
+                this.carteSelectionneeProperty.set(null);
+                System.out.println("Carte déselectionnée sur le terrain: " + idCarte);
+            } else {
+                this.carteSelectionnee = carteTrouvee;
+                this.carteSelectionneeProperty.set(carteTrouvee);
+                System.out.println("Carte sélectionnée sur le terrain: " + idCarte + " (" + carteTrouvee.getNom() + ")");
+            }
+        } else {
+            // Si aucune carte n'est trouvée (par exemple clic "à côté"), on pourrait déselectionner la carte actuelle.
+            // Pour l'instant, on ne fait rien si la carte n'est pas trouvée pour éviter une déselection non désirée.
+            System.err.println("Carte cliquée avec ID " + idCarte + " non trouvée sur le terrain.");
+        }
+    }
 }

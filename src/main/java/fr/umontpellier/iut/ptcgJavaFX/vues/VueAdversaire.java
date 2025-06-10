@@ -13,8 +13,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos; // For alignment
 import javafx.scene.Node; // For creerPokemonBancNode return type
-import javafx.scene.control.Button; // Added import
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added import
 import javafx.event.ActionEvent; // Added import
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region; // For placeholders or card backs
@@ -109,6 +110,20 @@ public class VueAdversaire extends VBox {
 
         // Setup listeners
         setupListeners();
+
+        if (this.jeu != null && this.jeu instanceof fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) {
+            fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu jeuConcret = (fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) this.jeu;
+            // Pour éviter d'ajouter plusieurs listeners si initialiserAffichage est appelé plusieurs fois avec le même jeu,
+            // il serait mieux de passer le listener à clearBindingsAndListeners pour le retirer.
+            // Pour l'instant, on va simplement l'ajouter.
+            // A more robust solution would be to manage this listener in setJeu or ensure it's cleared if VueAdversaire can be re-assigned a new Jeu instance.
+            // Or, check if a listener is already attached before adding.
+            // For simplicity as per task, just adding:
+            jeuConcret.carteSelectionneeProperty().addListener((obs, oldSelection, newSelection) -> {
+                mettreAJourStyleSelectionPokemonAdversaire(newSelection);
+            });
+            mettreAJourStyleSelectionPokemonAdversaire(jeuConcret.carteSelectionneeProperty().get());
+        }
     }
 
     private void setupListeners() {
@@ -216,16 +231,19 @@ public class VueAdversaire extends VBox {
         VBox pokemonCardContainer = new VBox(2);
         pokemonCardContainer.getStyleClass().add("pokemon-node-display");
         pokemonCardContainer.setAlignment(Pos.CENTER);
+        if (pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
+            pokemonCardContainer.setUserData(pokemon.getCartePokemon().getId()); // Store card ID
+        }
 
         Button pokemonButton = new Button(pokemon.getCartePokemon().getNom());
         pokemonButton.getStyleClass().setAll("card-button", "text-18px"); // Apply button styling
         pokemonButton.setOnAction(actionEvent -> {
-            System.out.println("Opponent's benched Pokemon clicked: " + pokemon.getCartePokemon().getNom());
-            // The actual call to jeu.uneCarteDeLaMainAEteChoisie was removed as per new requirement.
-            // If it were to be kept:
-            // if (jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
-            //     jeu.uneCarteDeLaMainAEteChoisie(pokemon.getCartePokemon().getId());
-            // }
+            if (this.jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
+                this.jeu.carteSurTerrainCliquee(pokemon.getCartePokemon().getId());
+            } else {
+                // Optionnel: Gérer le cas
+                System.err.println("Clic sur Pokémon de banc adverse, mais pas de Pokémon/carte/ID trouvé.");
+            }
         });
 
         HBox energieHBox = new HBox(2);
@@ -289,16 +307,52 @@ public class VueAdversaire extends VBox {
 
     @FXML
     void handleOpponentActivePokemonClick(ActionEvent event) {
-        // System.out.println("Opponent's active Pokemon button clicked. Name: " + (opponentPokemonActifButton != null ? opponentPokemonActifButton.getText() : "N/A"));
-        // For now, this click does not trigger game logic, it's for future UI interaction.
-        // If opponentPokemonActifButton holds the Pokemon's name, that's fine.
-        // Or, retrieve the active Pokemon from 'adversaire' property if needed for logging.
-        if (adversaire != null && adversaire.pokemonActifProperty() != null && adversaire.pokemonActifProperty().get() != null) {
-            System.out.println("Opponent's active Pokemon clicked: " + adversaire.pokemonActifProperty().get().getCartePokemon().getNom());
-        } else if (opponentPokemonActifButton != null) {
-             System.out.println("Opponent's active Pokemon button clicked: " + opponentPokemonActifButton.getText());
-        } else {
-            System.out.println("Opponent's active Pokemon button clicked, but no data available.");
+        if (this.jeu != null && this.adversaire != null) {
+            IPokemon activePokemon = this.adversaire.pokemonActifProperty().get();
+            if (activePokemon != null && activePokemon.getCartePokemon() != null && activePokemon.getCartePokemon().getId() != null) {
+                this.jeu.carteSurTerrainCliquee(activePokemon.getCartePokemon().getId());
+            } else {
+                // Optionnel: Gérer le cas où il n'y a pas de Pokémon actif cliquable
+                System.err.println("Clic sur Pokémon actif adverse, mais pas de Pokémon/carte/ID trouvé.");
+            }
+        }
+    }
+
+    private void mettreAJourStyleSelectionPokemonAdversaire(Carte carteActuellementSelectionnee) {
+        String idCarteSelectionnee = (carteActuellementSelectionnee == null) ? null : carteActuellementSelectionnee.getId();
+
+        // Pokémon Actif de l'adversaire
+        if (opponentPokemonActifButton != null && this.adversaire != null) {
+            IPokemon pkmnActif = this.adversaire.pokemonActifProperty().get();
+            if (pkmnActif != null && pkmnActif.getCartePokemon() != null && pkmnActif.getCartePokemon().getId() != null) {
+                if (pkmnActif.getCartePokemon().getId().equals(idCarteSelectionnee)) {
+                    opponentPokemonActifButton.getStyleClass().add("pokemon-selectionne");
+                } else {
+                    opponentPokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+                }
+            } else {
+                opponentPokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+            }
+        } else if (opponentPokemonActifButton != null) { // Ensure style is removed if no adversary or button
+             opponentPokemonActifButton.getStyleClass().removeAll("pokemon-selectionne");
+        }
+
+
+        // Pokémon du Banc de l'adversaire
+        if (bancAdversaireHBox != null) {
+            for (Node nodePokemonBanc : bancAdversaireHBox.getChildren()) {
+                if (nodePokemonBanc.getUserData() instanceof String) {
+                    String idCarteNode = (String) nodePokemonBanc.getUserData();
+                    if (idCarteNode.equals(idCarteSelectionnee)) {
+                        nodePokemonBanc.getStyleClass().add("pokemon-selectionne");
+                    } else {
+                        nodePokemonBanc.getStyleClass().removeAll("pokemon-selectionne");
+                    }
+                } else {
+                    // Cas des nœuds non-pokemon (devraient pas avoir userData String ID, ou autres types de noeuds)
+                    nodePokemonBanc.getStyleClass().removeAll("pokemon-selectionne");
+                }
+            }
         }
     }
 }

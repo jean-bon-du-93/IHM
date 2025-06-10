@@ -24,4 +24,5 @@ public interface IJeu {
     void uneCarteEnergieAEteChoisie(String idCarteEnergie);
     void uneCarteComplementaireAEteChoisie(String idCartecomplementaire);
 
+    void carteSurTerrainCliquee(String idCarte);
 }
