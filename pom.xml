@@ -87,13 +87,13 @@
                     <argLine>
                         --add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
                         --add-exports=javafx.base/com.sun.javafx.logging=ALL-UNNAMED
+                        <!-- Removed --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED -->
                     </argLine>
                     <systemPropertyVariables>
                         <testfx.robot>glass</testfx.robot>
                         <testfx.headless>true</testfx.headless>
-                        <prism.order>sw</prism.order>
-                        <prism.text>native</prism.text>
                         <java.awt.headless>true</java.awt.headless>
+                        <!-- Removed Monocle specific properties: glass.platform, monocle.platform, prism.order, prism.text -->
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
