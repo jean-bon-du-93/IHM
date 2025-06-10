@@ -334,7 +334,10 @@ public class Pokemon implements IPokemon {
                             c -> c.getTypeEnergie().asLetter(),
                             Collectors.mapping(Carte::getId, Collectors.toList())
                     ));
-            energie = FXCollections.observableMap(cartesEnergie);
+            // Remplacer : energie = FXCollections.observableMap(cartesEnergie);
+            // Par :
+            this.energie.clear();
+            this.energie.putAll(cartesEnergie);
         });
     }
 

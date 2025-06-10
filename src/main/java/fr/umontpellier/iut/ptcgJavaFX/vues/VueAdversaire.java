@@ -49,6 +49,8 @@ public class VueAdversaire extends VBox {
     // private ListChangeListener<ICarte> defausseListener; // Replaced by cardCountChangeListener
     // private ListChangeListener<ICarte> prixListener; // Replaced by cardCountChangeListener
     private ListChangeListener<ICarte> cardCountChangeListener; // For main, deck, discard, prizes
+    private MapChangeListener<String, List<String>> energiePokemonActifAdversaireListener; // Added field
+    private IPokemon opponentActivePokemonForEnergyListener = null; // To keep track of the Pokemon whose energy is being listened to
 
 
     public VueAdversaire() {
@@ -129,11 +131,35 @@ public class VueAdversaire extends VBox {
     private void setupListeners() {
         if (this.adversaire == null) return; // NPE Hardening
 
-        // Listener for active Pokémon
+        // Define the listener for energy changes on the active Pokemon
+        this.energiePokemonActifAdversaireListener = change -> {
+            rafraichirEnergiePokemonActifAdversaire();
+        };
+
+        // Listener for active Pokémon changes
         ObjectProperty<? extends IPokemon> pokemonActifProp = adversaire.pokemonActifProperty();
         if (pokemonActifProp != null) {
-            pokemonActifListener = (obs, oldVal, newVal) -> placerPokemonActifAdversaire();
+            pokemonActifListener = (obs, oldVal, newVal) -> {
+                // Detach listener from old active Pokemon's energy
+                if (oldVal != null && oldVal.energieProperty() != null) {
+                    oldVal.energieProperty().removeListener(this.energiePokemonActifAdversaireListener);
+                }
+                opponentActivePokemonForEnergyListener = newVal; // Update tracked Pokemon
+
+                placerPokemonActifAdversaire(); // This will also call rafraichirEnergiePokemonActifAdversaire
+
+                // Attach listener to new active Pokemon's energy
+                if (newVal != null && newVal.energieProperty() != null) {
+                    newVal.energieProperty().addListener(this.energiePokemonActifAdversaireListener);
+                }
+            };
             pokemonActifProp.addListener(pokemonActifListener);
+            // Initial attachment to current active Pokemon's energy (if any)
+            IPokemon currentActive = pokemonActifProp.get();
+            if (currentActive != null && currentActive.energieProperty() != null) {
+                currentActive.energieProperty().addListener(this.energiePokemonActifAdversaireListener);
+                opponentActivePokemonForEnergyListener = currentActive;
+            }
         }
 
         // Listener for bench
@@ -172,6 +198,12 @@ public class VueAdversaire extends VBox {
         if (pokemonActifProp != null && pokemonActifListener != null) {
             pokemonActifProp.removeListener(pokemonActifListener);
         }
+        // Detach energy listener from the last known active Pokemon
+        if (opponentActivePokemonForEnergyListener != null && opponentActivePokemonForEnergyListener.energieProperty() != null && energiePokemonActifAdversaireListener != null) {
+            opponentActivePokemonForEnergyListener.energieProperty().removeListener(energiePokemonActifAdversaireListener);
+        }
+        opponentActivePokemonForEnergyListener = null;
+
 
         ObservableList<? extends IPokemon> bancList = adversaire.getBanc(); // Assuming getBanc()
         if (bancList != null && bancListener != null) {
@@ -211,17 +243,23 @@ public class VueAdversaire extends VBox {
                 opponentPokemonActifButton.setText("Aucun");
             }
         }
+        // The energy display is now handled by rafraichirEnergiePokemonActifAdversaire()
+        // which is called by this method's caller (pokemonActifListener) or directly by the energy listener.
+        // Call it here for initial setup or if this method is called outside the listener chain.
+        rafraichirEnergiePokemonActifAdversaire();
+    }
 
-        if (energiePokemonActifAdversaireHBox != null) {
-            energiePokemonActifAdversaireHBox.getChildren().clear();
-            if (pkmnActif != null) {
-                ObservableMap<String, List<String>> energieMap = pkmnActif.energieProperty();
-                if (energieMap != null) {
-                    for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                        Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
-                        energyLabel.getStyleClass().add("energy-tag");
-                        energiePokemonActifAdversaireHBox.getChildren().add(energyLabel);
-                    }
+    private void rafraichirEnergiePokemonActifAdversaire() {
+        if (energiePokemonActifAdversaireHBox == null) return;
+        energiePokemonActifAdversaireHBox.getChildren().clear();
+        IPokemon pkmnActif = (this.adversaire != null && this.adversaire.pokemonActifProperty() != null) ? this.adversaire.pokemonActifProperty().get() : null;
+        if (pkmnActif != null) {
+            ObservableMap<String, List<String>> energieMap = pkmnActif.energieProperty();
+            if (energieMap != null) {
+                for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                    Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
+                    energyLabel.getStyleClass().add("energy-tag");
+                    energiePokemonActifAdversaireHBox.getChildren().add(energyLabel);
                 }
             }
         }
