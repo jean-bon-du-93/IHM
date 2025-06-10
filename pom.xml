@@ -86,7 +86,15 @@
 
                     <argLine>
                         --add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                        --add-exports=javafx.base/com.sun.javafx.logging=ALL-UNNAMED
                     </argLine>
+                    <systemPropertyVariables>
+                        <testfx.robot>glass</testfx.robot>
+                        <testfx.headless>true</testfx.headless>
+                        <prism.order>sw</prism.order>
+                        <prism.text>native</prism.text>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>

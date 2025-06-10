@@ -13,7 +13,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos; // For alignment
 import javafx.scene.Node; // For creerPokemonBancNode return type
+import javafx.scene.control.Button; // Added import
 import javafx.scene.control.Label;
+import javafx.event.ActionEvent; // Added import
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region; // For placeholders or card backs
 import javafx.scene.layout.VBox;
@@ -28,7 +30,7 @@ public class VueAdversaire extends VBox {
     private IJoueur adversaire;
 
     @FXML Label nomAdversaireLabel;
-    @FXML Label pokemonActifAdversaireDisplay; // Renamed
+    @FXML Button opponentPokemonActifButton; // Changed from Label to Button and renamed
     @FXML HBox energiePokemonActifAdversaireHBox; // Added
     @FXML HBox bancAdversaireHBox;
     @FXML HBox panneauMainAdversaireHBox; // Added
@@ -77,7 +79,7 @@ public class VueAdversaire extends VBox {
     private void initialiserAffichage() {
         if (adversaire == null) {
             nomAdversaireLabel.setText("Adversaire non défini");
-            if (pokemonActifAdversaireDisplay != null) pokemonActifAdversaireDisplay.setText("N/A");
+            if (opponentPokemonActifButton != null) opponentPokemonActifButton.setText("N/A"); // Changed field name
             if (energiePokemonActifAdversaireHBox != null) energiePokemonActifAdversaireHBox.getChildren().clear();
             if (panneauMainAdversaireHBox != null) panneauMainAdversaireHBox.getChildren().clear();
             if (bancAdversaireHBox != null) bancAdversaireHBox.getChildren().clear();
@@ -96,6 +98,10 @@ public class VueAdversaire extends VBox {
 
         // Initial UI setup
         if (nomAdversaireLabel != null) nomAdversaireLabel.setText(adversaire.getNom());
+
+        // Removed old setOnMouseClicked handler for pokemonActifAdversaireDisplay from here.
+        // The new Button will use onAction specified in FXML.
+
         placerPokemonActifAdversaire();
         placerBancAdversaire();
         placerMainAdversaire(); // Initial placement of hand representation
@@ -183,11 +189,11 @@ public class VueAdversaire extends VBox {
             pkmnActif = adversaire.pokemonActifProperty().get();
         }
 
-        if (pokemonActifAdversaireDisplay != null) {
+        if (opponentPokemonActifButton != null) { // Changed field name
             if (pkmnActif != null && pkmnActif.getCartePokemon() != null) {
-                pokemonActifAdversaireDisplay.setText(pkmnActif.getCartePokemon().getNom());
+                opponentPokemonActifButton.setText(pkmnActif.getCartePokemon().getNom());
             } else {
-                pokemonActifAdversaireDisplay.setText("Aucun");
+                opponentPokemonActifButton.setText("Aucun");
             }
         }
 
@@ -208,11 +214,19 @@ public class VueAdversaire extends VBox {
 
     private Node creerOpponentPokemonBancNode(IPokemon pokemon) {
         VBox pokemonCardContainer = new VBox(2);
-        pokemonCardContainer.getStyleClass().add("pokemon-node-display"); // Using similar style as player's bench node
+        pokemonCardContainer.getStyleClass().add("pokemon-node-display");
         pokemonCardContainer.setAlignment(Pos.CENTER);
 
-        Label pkmnLabel = new Label(pokemon.getCartePokemon().getNom());
-        pkmnLabel.getStyleClass().setAll("opponent-card-display", "text-18px"); // Name part
+        Button pokemonButton = new Button(pokemon.getCartePokemon().getNom());
+        pokemonButton.getStyleClass().setAll("card-button", "text-18px"); // Apply button styling
+        pokemonButton.setOnAction(actionEvent -> {
+            System.out.println("Opponent's benched Pokemon clicked: " + pokemon.getCartePokemon().getNom());
+            // The actual call to jeu.uneCarteDeLaMainAEteChoisie was removed as per new requirement.
+            // If it were to be kept:
+            // if (jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
+            //     jeu.uneCarteDeLaMainAEteChoisie(pokemon.getCartePokemon().getId());
+            // }
+        });
 
         HBox energieHBox = new HBox(2);
         energieHBox.setAlignment(Pos.CENTER);
@@ -224,7 +238,11 @@ public class VueAdversaire extends VBox {
                 energieHBox.getChildren().add(energyLabel);
             }
         }
-        pokemonCardContainer.getChildren().addAll(pkmnLabel, energieHBox);
+        pokemonCardContainer.getChildren().addAll(pokemonButton, energieHBox);
+
+        // Removed old pokemonCardContainer.setOnMouseClicked handler.
+        // Click actions are now on the pokemonButton via setOnAction.
+
         return pokemonCardContainer;
     }
 
@@ -267,5 +285,20 @@ public class VueAdversaire extends VBox {
         deckAdversaireLabel.setText("Deck Adv.: " + (adversaire.piocheProperty() != null ? adversaire.piocheProperty().size() : "N/A"));
         defausseAdversaireLabel.setText("Défausse Adv.: " + (adversaire.defausseProperty() != null ? adversaire.defausseProperty().size() : "N/A"));
         prixAdversaireLabel.setText("Prix Adv.: " + (adversaire.recompensesProperty() != null ? adversaire.recompensesProperty().size() : "N/A"));
+    }
+
+    @FXML
+    void handleOpponentActivePokemonClick(ActionEvent event) {
+        // System.out.println("Opponent's active Pokemon button clicked. Name: " + (opponentPokemonActifButton != null ? opponentPokemonActifButton.getText() : "N/A"));
+        // For now, this click does not trigger game logic, it's for future UI interaction.
+        // If opponentPokemonActifButton holds the Pokemon's name, that's fine.
+        // Or, retrieve the active Pokemon from 'adversaire' property if needed for logging.
+        if (adversaire != null && adversaire.pokemonActifProperty() != null && adversaire.pokemonActifProperty().get() != null) {
+            System.out.println("Opponent's active Pokemon clicked: " + adversaire.pokemonActifProperty().get().getCartePokemon().getNom());
+        } else if (opponentPokemonActifButton != null) {
+             System.out.println("Opponent's active Pokemon button clicked: " + opponentPokemonActifButton.getText());
+        } else {
+            System.out.println("Opponent's active Pokemon button clicked, but no data available.");
+        }
     }
 }
