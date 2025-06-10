@@ -35,32 +35,32 @@ public class TourNormalSansRetraite extends EtatJoueur {
         }
 
         // Vérifier si c'est une carte Énergie jouable
-        if (carte.getTypeEnergie() != null && getJoueur().peutJouerEnergie()) {
-            getJoueur().setEtatCourant(new AttenteChoixPokemonPourEnergie(getJoueur(), carte));
+        if (carte.getTypeEnergie() != null && joueur.peutJouerEnergie()) { // getJoueur() -> joueur
+            joueur.setEtatCourant(new AttenteChoixPokemonPourEnergie(joueur, carte)); // getJoueur() -> joueur (twice)
             // L'instruction est mise à jour par le constructeur de AttenteChoixPokemonPourEnergie
-        } else if (carte.getTypeEnergie() != null && !getJoueur().peutJouerEnergie()) {
+        } else if (carte.getTypeEnergie() != null && !joueur.peutJouerEnergie()) { // getJoueur() -> joueur
             getJeu().instructionProperty().setValue("Vous avez déjà joué une carte Énergie ce tour.");
             // Reste dans l'état TourNormal (ou TourNormalSansRetraite)
         }
         else { // Logique pour les autres types de cartes (Pokémon, Dresseur, Talent)
-            List<String> choixPossibles = getJoueur().getCartesEnMainJouables(); // S'assurer que cette liste est à jour
+            List<String> choixPossibles = joueur.getCartesEnMainJouables(); // getJoueur() -> joueur
             if (!choixPossibles.isEmpty() && choixPossibles.contains(numCarte)) {
-                List<String> pokemonsEnJeuAvecTalent = getJoueur().getListePokemonEnJeu().stream()
+                List<String> pokemonsEnJeuAvecTalent = joueur.getListePokemonEnJeu().stream() // getJoueur() -> joueur
                         .filter(Pokemon::peutUtiliserTalent)
                         .map(Pokemon::getCartePokemon)
                         .map(Carte::getId)
                         .toList();
                 if (pokemonsEnJeuAvecTalent.contains(numCarte)) {
                     // Assurez-vous que getPokemon(Carte) existe et fonctionne comme prévu
-                    Pokemon pokemonAvecTalent = getJoueur().getPokemon(carte);
+                    Pokemon pokemonAvecTalent = joueur.getPokemon(carte);  // getJoueur() -> joueur
                     if (pokemonAvecTalent != null) {
-                        pokemonAvecTalent.utiliserTalent(getJoueur());
+                        pokemonAvecTalent.utiliserTalent(joueur); // getJoueur() -> joueur
                     } else {
                         // Fallback or error, should not happen if pokemonsEnJeuAvecTalent is correct
-                        getJoueur().jouerCarteEnMain(numCarte);
+                        joueur.jouerCarteEnMain(numCarte); // getJoueur() -> joueur
                     }
                 } else {
-                    getJoueur().jouerCarteEnMain(numCarte);
+                    joueur.jouerCarteEnMain(numCarte); // getJoueur() -> joueur
                 }
             } else {
                 // Si la carte n'est pas jouable (par ex. énergie alors qu'on ne peut plus, ou autre carte non listée)
