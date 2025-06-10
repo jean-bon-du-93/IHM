@@ -25,31 +25,28 @@ public class AttenteChoixPokemonPourEnergie extends EtatJoueur {
 
             if (newSelection != null) { // Une carte sur le terrain a été sélectionnée
                 Pokemon ciblePotentielle = null;
-                System.out.println("[AttenteChoixPokemonPourEnergie] Recherche de cible parmi les Pokémon du joueur " + joueur.getNom() + ":"); // getJoueur() -> joueur
-                List<Pokemon> pokemonsDuJoueur = joueur.getListePokemonEnJeu(); // getJoueur() -> joueur
+                System.out.println("[AttenteChoixPokemonPourEnergie] Recherche de cible parmi les Pokémon du joueur " + this.joueur.getNom() + ":");
+                List<Pokemon> pokemonsDuJoueur = this.joueur.getListePokemonEnJeu();
                 System.out.println("[AttenteChoixPokemonPourEnergie] Nombre de Pokémon en jeu pour le joueur: " + pokemonsDuJoueur.size());
 
                 for (Pokemon p : pokemonsDuJoueur) {
-                    // Utiliser getCartePokemon().getNom() pour l'affichage si p.getNom() n'existe pas ou n'est pas souhaité
                     System.out.println("[AttenteChoixPokemonPourEnergie] Checking Pkmn: " + p.getCartePokemon().getNom() + " (CartePokemon ID: " + p.getCartePokemon().getId() + ")");
-                    // newSelection est déjà vérifié non-null à ce stade
-                    // p.getCartePokemon() doit aussi être non-null pour que le Pokémon soit valide en jeu
                     if (p.getCartePokemon() != null && newSelection.getId() != null && p.getCartePokemon().getId().equals(newSelection.getId())) {
                         ciblePotentielle = p;
-                        System.out.println("[AttenteChoixPokemonPourEnergie] Cible potentielle trouvée (par ID): " + ciblePotentielle.getCartePokemon().getNom()); // .getNom() -> .getCartePokemon().getNom()
+                        System.out.println("[AttenteChoixPokemonPourEnergie] Cible potentielle trouvée (par ID): " + ciblePotentielle.getCartePokemon().getNom());
                         break;
                     }
                 }
 
                 if (ciblePotentielle != null) {
-                    System.out.println("[AttenteChoixPokemonPourEnergie] Cible VALIDE trouvée: " + ciblePotentielle.getCartePokemon().getNom() + ". Attachement de " + this.energieAAttacher.getNom()); // .getNom() -> .getCartePokemon().getNom()
-                    joueur.retirerCarteMain(this.energieAAttacher); // getJoueur() -> joueur
+                    System.out.println("[AttenteChoixPokemonPourEnergie] Cible VALIDE trouvée: " + ciblePotentielle.getCartePokemon().getNom() + ". Attachement de " + this.energieAAttacher.getNom());
+                    this.joueur.retirerCarteMain(this.energieAAttacher);
                     ciblePotentielle.ajouterCarte(this.energieAAttacher);
-                    joueur.setAJoueEnergie(); // getJoueur() -> joueur
+                    this.joueur.setAJoueEnergie();
 
                     cleanupListener();
-                    getJeu().instructionProperty().setValue(this.energieAAttacher.getNom() + " attachée à " + ciblePotentielle.getCartePokemon().getNom() + ". Choisissez une action."); // .getNom() -> .getCartePokemon().getNom()
-                    joueur.setEtatCourant(new TourNormal(joueur)); // getJoueur() -> joueur (twice)
+                    getJeu().instructionProperty().setValue(this.energieAAttacher.getNom() + " attachée à " + ciblePotentielle.getCartePokemon().getNom() + ". Choisissez une action.");
+                    this.joueur.setEtatCourant(new TourNormal(this.joueur));
                     getJeu().carteSelectionneeProperty().set(null);
                 } else {
                     System.out.println("[AttenteChoixPokemonPourEnergie] Cible INVALIDE. newSelection: " + (newSelection != null ? newSelection.getNom() + " ID " + newSelection.getId() : "null"));
@@ -76,44 +73,32 @@ public class AttenteChoixPokemonPourEnergie extends EtatJoueur {
         System.out.println("[AttenteChoixPokemonPourEnergie] Annulation de l'attachement pour " + energieAAttacher.getNom());
         cleanupListener();
         getJeu().instructionProperty().setValue("Attachement d'énergie annulé. Choisissez une action.");
-        getJoueur().setEtatCourant(new TourNormal(getJoueur())); // Corrected: getJoueur()
+        joueur.setEtatCourant(new TourNormal(joueur)); // Changed getJoueur() to joueur
         getJeu().carteSelectionneeProperty().set(null);
     }
 
     @Override
     public void passer() {
         annulerAttachement();
-        getJoueur().getEtatCourant().passer();
+        joueur.getEtatCourant().passer();
     }
 
     @Override
     public void carteChoisie(String idAutreCarteEnMain) {
         annulerAttachement();
-        getJoueur().getEtatCourant().carteChoisie(idAutreCarteEnMain);
+        joueur.getEtatCourant().carteChoisie(idAutreCarteEnMain);
     }
 
-    @Override
-    public void attaquer(String nomAttaque) {
-        annulerAttachement();
-        getJoueur().getEtatCourant().attaquer(nomAttaque);
-    }
+    // attaquer(String) a été retirée. EtatJoueur a attaquer() sans paramètre.
 
     @Override
     public void retraiteChoisie() {
         annulerAttachement();
-        getJoueur().getEtatCourant().retraiteChoisie();
+        joueur.getEtatCourant().retraiteChoisie();
     }
 
-    @Override
-    public void carteSurTerrainCliquee(String idCarte) {
-        // La logique principale est dans le listener.
-        // Si un clic arrive ici, c'est que la sélection n'a pas changé ou que le listener
-        // n'a pas abouti à une action (ex: clic sur une carte non-Pokémon du joueur).
-        // Si newSelection dans le listener est la même que oldSelection, le listener ne se redéclenche pas.
-        // Dans ce cas, un nouveau clic sur la même carte (qui est déjà sélectionnée) pourrait être interprété différemment,
-        // mais actuellement, la sélection est effacée par le listener si la cible n'est pas valide.
-        // Donc, un deuxième clic sur une carte invalide ne devrait pas arriver ici si la sélection a été annulée.
-        // Cette méthode peut rester vide ou loguer si un comportement inattendu est observé.
+    // @Override // carteSurTerrainCliquee n'est pas dans EtatJoueur, donc @Override est incorrect
+    public void carteSurTerrainCliquee(String idCarte) { // Removed @Override
          System.out.println("[AttenteChoixPokemonPourEnergie] carteSurTerrainCliquee appelée directement. ID: " + idCarte + ". La logique principale est dans le listener.");
     }
 }
