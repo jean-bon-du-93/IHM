@@ -4,6 +4,7 @@ import fr.umontpellier.iut.ptcgJavaFX.IPokemon;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Attaque;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon;
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemonEvolution; // Added import
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -254,20 +255,30 @@ public class Pokemon implements IPokemon {
         attaque.attaquer(joueur);
     }
 
-    /**
-     * Évolue le pokémon en un nouveau pokémon.
-     * <p>
-     * Prérequis : la carte pokémon passé en argument doit être une évolution de la
-     * carte pokémon actuelle.
-     * 
-     * @param cartePokemon le nouveau pokémon qui doit remplacer la carte Pokémon
-     *                     actuelle
-     */
-    public void evoluer(CartePokemon cartePokemon) {
-        this.cartePokemon.setValue(cartePokemon);
-        cartes.add(cartePokemon);
-        peutEvoluer = false;
+    // Note: The method signature was changed from CartePokemon to CartePokemonEvolution
+    // The logic inside remains largely the same as what was provided in the prompt,
+    // as the original simple evoluer method already did most of it.
+    public void evoluer(CartePokemonEvolution carteEvolution) {
+        // La carte d'évolution est ajoutée à la liste des cartes attachées au Pokémon.
+        // La carte principale du Pokémon (celle qui définit son nom, ses PV, ses attaques)
+        // devient la carte d'évolution.
+        this.cartes.add(carteEvolution); // Ajoute la nouvelle évolution à la pile de cartes du Pokémon
+        this.cartePokemon.set(carteEvolution); // Change la "face" du Pokémon par la carte d'évolution
+
+        // Les dégâts restent. Les énergies restent (car elles sont dans this.cartes).
+
+        // L'évolution guérit les conditions spéciales
         retirerEffets();
+        // Si d'autres conditions spéciales existent (Confus, Empoisonné, Paralysé, Endormi),
+        // il faudrait les réinitialiser ici aussi.
+        // Par exemple : si des champs comme this.estConfus (BooleanProperty) existent, les mettre à false.
+
+        this.peutEvoluer = false; // Ne peut plus évoluer ce tour-ci.
+                                   // Sera remis à true à la fin du prochain tour du joueur via onFinTour().
+
+        // La mise à jour de this.cartePokemon.set() et this.cartes.add() devrait déclencher
+        // les listeners nécessaires pour mettre à jour l'UI (nom, PV, attaques, énergies).
+        // La méthode miseAJourAttaquesEtEnergie est déjà attachée comme listener à this.cartes.
     }
 
     /**
