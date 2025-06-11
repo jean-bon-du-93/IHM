@@ -16,17 +16,31 @@ import javafx.geometry.Pos; // For alignment
 import javafx.scene.Node; // For creerPokemonBancNode return type
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView; // Added for image display
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added import
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.Type; // Added for energy icons
 import javafx.event.ActionEvent; // Added import
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region; // For placeholders or card backs
+// import javafx.scene.layout.Region; // For placeholders or card backs - ImageView will be used
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.util.List; // For energieProperty value type
+import java.util.Map; // For iterating energy map
 
 public class VueAdversaire extends VBox {
     private static final int MAX_BENCH_SLOTS = 5; // Matching VueJoueurActif
+
+    // Constants for image sizes
+    private static final double LARGEUR_PKMN_ACTIF_ADV = 100;
+    private static final double HAUTEUR_PKMN_ACTIF_ADV = 140;
+    private static final double LARGEUR_PKMN_BANC_ADV = 60;
+    private static final double HAUTEUR_PKMN_BANC_ADV = 84;
+    private static final double LARGEUR_CARTE_MAIN_ADV = 50;
+    private static final double HAUTEUR_CARTE_MAIN_ADV = 70;
+    private static final double TAILLE_ICONE_ENERGIE_ADV = 18;
+    private static final double LARGEUR_DOS_PETIT = 30;
+    private static final double HAUTEUR_DOS_PETIT = 42;
 
     private IJeu jeu;
     private IJoueur adversaire;
@@ -39,8 +53,10 @@ public class VueAdversaire extends VBox {
     // mainAdversaireLabel is still used for count, but now part of a different logical group in FXML
     @FXML Label mainAdversaireLabel;
     @FXML Label deckAdversaireLabel;
+    @FXML ImageView deckAdversaireImageView; // Added FXML field
     @FXML Label defausseAdversaireLabel;
     @FXML Label prixAdversaireLabel;
+    @FXML ImageView prixAdversaireImageView; // Added FXML field
 
     // Listeners to update UI when properties of 'adversaire' change
     private ChangeListener<IPokemon> pokemonActifListener;
@@ -89,8 +105,10 @@ public class VueAdversaire extends VBox {
             if (bancAdversaireHBox != null) bancAdversaireHBox.getChildren().clear();
             if (mainAdversaireLabel != null) mainAdversaireLabel.setText("Main Adv.: N/A");
             if (deckAdversaireLabel != null) deckAdversaireLabel.setText("Deck Adv.: N/A");
+            if (deckAdversaireImageView != null) deckAdversaireImageView.setVisible(false); // Hide if no adversary
             if (defausseAdversaireLabel != null) defausseAdversaireLabel.setText("Défausse Adv.: N/A");
             if (prixAdversaireLabel != null) prixAdversaireLabel.setText("Prix Adv.: N/A");
+            if (prixAdversaireImageView != null) prixAdversaireImageView.setVisible(false); // Hide if no adversary
             return;
         }
 
@@ -106,10 +124,18 @@ public class VueAdversaire extends VBox {
         // Removed old setOnMouseClicked handler for pokemonActifAdversaireDisplay from here.
         // The new Button will use onAction specified in FXML.
 
+        // Set up images for deck and prize card backs
+        if (deckAdversaireImageView != null) {
+            deckAdversaireImageView.setImage(VueUtils.creerImageViewPourDosCarte(LARGEUR_DOS_PETIT, HAUTEUR_DOS_PETIT).getImage());
+        }
+        if (prixAdversaireImageView != null) {
+            prixAdversaireImageView.setImage(VueUtils.creerImageViewPourDosCarte(LARGEUR_DOS_PETIT, HAUTEUR_DOS_PETIT).getImage());
+        }
+
         placerPokemonActifAdversaire();
         placerBancAdversaire();
         placerMainAdversaire(); // Initial placement of hand representation
-        mettreAJourComptesCartesAdversaire(); // Initial update of counts
+        mettreAJourComptesCartesAdversaire(); // Initial update of counts and image visibility
 
         // Setup listeners
         setupListeners();
@@ -237,16 +263,19 @@ public class VueAdversaire extends VBox {
             pkmnActif = adversaire.pokemonActifProperty().get();
         }
 
-        if (opponentPokemonActifButton != null) { // Changed field name
+        if (opponentPokemonActifButton != null) {
             if (pkmnActif != null && pkmnActif.getCartePokemon() != null) {
-                opponentPokemonActifButton.setText(pkmnActif.getCartePokemon().getNom());
+                ImageView imageView = VueUtils.creerImageViewPourCarte(pkmnActif.getCartePokemon(), LARGEUR_PKMN_ACTIF_ADV, HAUTEUR_PKMN_ACTIF_ADV);
+                opponentPokemonActifButton.setGraphic(imageView);
+                opponentPokemonActifButton.setText(null); // Remove text
+                // Tooltip tooltip = new Tooltip(pkmnActif.getCartePokemon().getNom());
+                // opponentPokemonActifButton.setTooltip(tooltip);
             } else {
-                opponentPokemonActifButton.setText("Aucun");
+                // Display card back or clear
+                opponentPokemonActifButton.setGraphic(VueUtils.creerImageViewPourDosCarte(LARGEUR_PKMN_ACTIF_ADV, HAUTEUR_PKMN_ACTIF_ADV));
+                opponentPokemonActifButton.setText(null);
             }
         }
-        // The energy display is now handled by rafraichirEnergiePokemonActifAdversaire()
-        // which is called by this method's caller (pokemonActifListener) or directly by the energy listener.
-        // Call it here for initial setup or if this method is called outside the listener chain.
         rafraichirEnergiePokemonActifAdversaire();
     }
 
@@ -257,10 +286,29 @@ public class VueAdversaire extends VBox {
         if (pkmnActif != null) {
             ObservableMap<String, List<String>> energieMap = pkmnActif.energieProperty();
             if (energieMap != null) {
-                for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                    Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
-                    energyLabel.getStyleClass().add("energy-tag");
-                    energiePokemonActifAdversaireHBox.getChildren().add(energyLabel);
+                for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                    String typeLetter = entry.getKey();
+                    int count = entry.getValue().size();
+                    if (count > 0) {
+                        Type typeEnum = null;
+                        for (Type t : Type.values()) {
+                            if (t.asLetter().equals(typeLetter)) {
+                                typeEnum = t;
+                                break;
+                            }
+                        }
+                        if (typeEnum != null) {
+                            ImageView iconeEnergie = VueUtils.creerImageViewPourIconeEnergie(typeEnum, TAILLE_ICONE_ENERGIE_ADV);
+                            Label countLabel = new Label("x" + count);
+                            HBox energyEntryBox = new HBox(iconeEnergie, countLabel);
+                            energyEntryBox.setSpacing(2);
+                            energiePokemonActifAdversaireHBox.getChildren().add(energyEntryBox);
+                        } else { // Fallback for unknown type letters
+                            Label energyLabel = new Label(typeLetter + " x" + count);
+                            energyLabel.getStyleClass().add("energy-tag");
+                            energiePokemonActifAdversaireHBox.getChildren().add(energyLabel);
+                        }
+                    }
                 }
             }
         }
@@ -274,13 +322,18 @@ public class VueAdversaire extends VBox {
             pokemonCardContainer.setUserData(pokemon.getCartePokemon().getId()); // Store card ID
         }
 
-        Button pokemonButton = new Button(pokemon.getCartePokemon().getNom());
-        pokemonButton.getStyleClass().setAll("card-button", "text-18px"); // Apply button styling
+        ImageView imageViewPkmnBanc = VueUtils.creerImageViewPourCarte(pokemon.getCartePokemon(), LARGEUR_PKMN_BANC_ADV, HAUTEUR_PKMN_BANC_ADV);
+        Button pokemonButton = new Button();
+        pokemonButton.setGraphic(imageViewPkmnBanc);
+        pokemonButton.getStyleClass().clear(); // Remove default button styling
+        pokemonButton.getStyleClass().add("card-button-on-bench"); // Add custom class for styling
+        // Tooltip tooltip = new Tooltip(pokemon.getCartePokemon().getNom());
+        // pokemonButton.setTooltip(tooltip);
+
         pokemonButton.setOnAction(actionEvent -> {
             if (this.jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
                 this.jeu.carteSurTerrainCliquee(pokemon.getCartePokemon().getId());
             } else {
-                // Optionnel: Gérer le cas
                 System.err.println("Clic sur Pokémon de banc adverse, mais pas de Pokémon/carte/ID trouvé.");
             }
         });
@@ -289,16 +342,32 @@ public class VueAdversaire extends VBox {
         energieHBox.setAlignment(Pos.CENTER);
         ObservableMap<String, List<String>> energieMap = pokemon.energieProperty();
         if (energieMap != null) {
-            for (java.util.Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                Label energyLabel = new Label(entry.getKey() + " x" + entry.getValue().size());
-                energyLabel.getStyleClass().add("energy-tag");
-                energieHBox.getChildren().add(energyLabel);
+            for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                 String typeLetter = entry.getKey();
+                 int count = entry.getValue().size();
+                 if (count > 0) {
+                     Type typeEnum = null;
+                     for (Type t : Type.values()) {
+                         if (t.asLetter().equals(typeLetter)) {
+                             typeEnum = t;
+                             break;
+                         }
+                     }
+                     if (typeEnum != null) {
+                         ImageView iconeEnergie = VueUtils.creerImageViewPourIconeEnergie(typeEnum, TAILLE_ICONE_ENERGIE_ADV);
+                         Label countLabel = new Label("x" + count);
+                         HBox energyEntryBox = new HBox(iconeEnergie, countLabel);
+                         energyEntryBox.setSpacing(2);
+                         energieHBox.getChildren().add(energyEntryBox);
+                     } else {
+                        Label energyLabel = new Label(typeLetter + " x" + count);
+                        energyLabel.getStyleClass().add("energy-tag");
+                        energieHBox.getChildren().add(energyLabel);
+                     }
+                 }
             }
         }
         pokemonCardContainer.getChildren().addAll(pokemonButton, energieHBox);
-
-        // Removed old pokemonCardContainer.setOnMouseClicked handler.
-        // Click actions are now on the pokemonButton via setOnAction.
 
         return pokemonCardContainer;
     }
@@ -323,25 +392,36 @@ public class VueAdversaire extends VBox {
         if (adversaire != null && adversaire.getMain() != null) {
             int handSize = adversaire.getMain().size();
             for (int i = 0; i < handSize; i++) {
-                Label cardBack = new Label("Carte"); // Placeholder text
-                cardBack.getStyleClass().add("opponent-card-back"); // CSS class for styling
-                // Dimensions for card backs should be handled by CSS class .opponent-card-back
-                panneauMainAdversaireHBox.getChildren().add(cardBack);
+                ImageView dosCarteView = VueUtils.creerImageViewPourDosCarte(LARGEUR_CARTE_MAIN_ADV, HAUTEUR_CARTE_MAIN_ADV);
+                panneauMainAdversaireHBox.getChildren().add(dosCarteView);
             }
         }
     }
 
     private void mettreAJourComptesCartesAdversaire() {
-        if (adversaire == null) return;
+        if (adversaire == null) {
+            // Labels are already set to "N/A" or similar in initialiserAffichage if adversaire is null.
+            // Ensure images are hidden too.
+            if (deckAdversaireImageView != null) deckAdversaireImageView.setVisible(false);
+            if (prixAdversaireImageView != null) prixAdversaireImageView.setVisible(false);
+            return;
+        }
 
-        // Assuming xxxProperty() returns an ObservableList or a ListProperty that has a size() method or getSize().
-        // For ReadOnlyListProperty, it would be .getSize(). For ObservableList, it's .size().
-        // The task used .size(), implying the property itself is an ObservableList or SimpleListProperty.
-        // Correcting main to use getMain().size()
-        mainAdversaireLabel.setText("Main Adv.: " + (adversaire.getMain() != null ? adversaire.getMain().size() : "N/A"));
-        deckAdversaireLabel.setText("Deck Adv.: " + (adversaire.piocheProperty() != null ? adversaire.piocheProperty().size() : "N/A"));
-        defausseAdversaireLabel.setText("Défausse Adv.: " + (adversaire.defausseProperty() != null ? adversaire.defausseProperty().size() : "N/A"));
-        prixAdversaireLabel.setText("Prix Adv.: " + (adversaire.recompensesProperty() != null ? adversaire.recompensesProperty().size() : "N/A"));
+        mainAdversaireLabel.setText("Main Adv.: " + (adversaire.getMain() != null ? adversaire.getMain().size() : "0"));
+
+        int taillePioche = (adversaire.piocheProperty() != null) ? adversaire.piocheProperty().size() : 0;
+        deckAdversaireLabel.setText("Deck Adv.: " + taillePioche);
+        if (deckAdversaireImageView != null) {
+            deckAdversaireImageView.setVisible(taillePioche > 0);
+        }
+
+        defausseAdversaireLabel.setText("Défausse Adv.: " + (adversaire.defausseProperty() != null ? adversaire.defausseProperty().size() : "0"));
+
+        int taillePrix = (adversaire.recompensesProperty() != null) ? adversaire.recompensesProperty().size() : 0;
+        prixAdversaireLabel.setText("Prix Adv.: " + taillePrix);
+        if (prixAdversaireImageView != null) {
+            prixAdversaireImageView.setVisible(taillePrix > 0);
+        }
     }
 
     @FXML

@@ -157,4 +157,44 @@
     -fx-effect: dropshadow(gaussian, rgba(255,215,0,0.5), 10, 0.3, 0, 0);
     /* S'assurer que le style n'interfère pas négativement avec le style existant des card-button */
     /* On peut avoir besoin d'ajuster les padding ou margins si la bordure cause des décalages */
+    /* If .card-button-in-hand etc have -fx-padding:0, this should be fine. */
+}
+
+/* === Styles from new subtask === */
+
+/* Styles for buttons containing card images */
+.card-button-in-hand,
+.card-button-on-bench {
+    -fx-background-color: transparent;
+    -fx-padding: 0; /* No internal padding for the button */
+    -fx-border-color: transparent; /* No default border for the button */
+    -fx-effect: null; /* Remove default effects like shadow if needed */
+}
+
+.card-button-in-hand:hover,
+.card-button-on-bench:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.5, 0, 0); /* Light hover effect */
+}
+
+/* Style for attack buttons */
+.attack-button {
+    -fx-font-size: 10px; /* Or a suitable size */
+    -fx-pref-width: 140px; /* Fixed width or use USE_COMPUTED_SIZE */
+    -fx-alignment: CENTER_LEFT; /* Align text to the left if needed */
+    -fx-padding: 4px;
+    /* Other styles if needed: background color, border, etc. */
+}
+
+/* Styles for containers (optional, if FXML is not sufficient) */
+.attaques-pane {
+    /* -fx-border-color: lightgray; /* For visualizing boundaries during dev */
+    /* -fx-border-width: 1px; */
+    /* -fx-padding: 5px; */
+    /* FlowPane already handles content well; hgap/vgap are set in FXML */
+}
+
+.deck-rewards-pane {
+    /* -fx-border-color: lightgray; */
+    /* -fx-border-width: 1px; */
+    /* -fx-padding: 5px; */
 }
