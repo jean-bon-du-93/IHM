@@ -4,7 +4,7 @@ import fr.umontpellier.iut.ptcgJavaFX.ICarte;
 import fr.umontpellier.iut.ptcgJavaFX.IJeu;
 import fr.umontpellier.iut.ptcgJavaFX.IJoueur;
 import fr.umontpellier.iut.ptcgJavaFX.IPokemon;
-// import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Commented out if no longer needed
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Ensure this is uncommented or present
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -505,7 +505,7 @@ public class VueJoueurActif extends VBox {
             return;
        }
 
-       List<Attaque> toutesLesAttaquesDeLaCarte = pokemonActif.getCartePokemon().getAttaques();
+       List<Attaque> toutesLesAttaquesDeLaCarte = ((fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon) pokemonActif.getCartePokemon()).getAttaques();
        ObservableList<String> nomsAttaquesJouables = pokemonActif.attaquesProperty(); // These are the ones that can be used
 
        for (String nomAttaqueJouable : nomsAttaquesJouables) {
