@@ -334,11 +334,17 @@ public class Pokemon implements IPokemon {
      * lorsqu'on lui ajoute de nouvelles cartes
      */
     private void miseAJourAttaquesEtEnergie() {
-        cartes.addListener((ListChangeListener<Carte>) nouvelleCarte -> {
+        // Le champ 'attaques' est déjà initialisé dans le constructeur comme FXCollections.observableArrayList()
+        // Le champ 'energie' est déjà initialisé dans le constructeur comme FXCollections.observableHashMap()
+
+        cartes.addListener((ListChangeListener.Change<? extends Carte> change) -> {
+            // Mettre à jour la liste des noms d'attaques possibles
             List<String> nomsAttaquesPossibles = getAttaquesPossibles().stream()
                     .map(Attaque::getNom)
                     .toList();
-            attaques = FXCollections.observableArrayList(nomsAttaquesPossibles);
+            this.attaques.setAll(nomsAttaquesPossibles); // Modifier la liste existante
+
+            // Mettre à jour la map d'énergies
             Map<String, List<String>> cartesEnergie = cartes.stream()
                     .filter(c -> c.getTypeEnergie() != null)
                     .collect(Collectors.groupingBy(

@@ -19,10 +19,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos; // Added for alignment in placerBanc
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.FlowPane; // Added for attaquesPane
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.Node; // Added for mettreAJourStyleSelectionPokemon
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added for mettreAJourStyleSelectionPokemon
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Attaque; // Added for attaques
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.Type; // Added for attaque cost display
+
 
 import java.io.IOException;
 import java.util.ArrayList; // Added for listener cleanup
@@ -46,9 +50,12 @@ public class VueJoueurActif extends VBox {
     HBox panneauMainHBox;
     @FXML
     HBox panneauBancHBox;
+    @FXML
+    private FlowPane attaquesPane; // Added for displaying attacks
 
     private ChangeListener<IJoueur> joueurActifGlobalChangeListener;
     private ChangeListener<IPokemon> pokemonDuJoueurActifChangeListener;
+    private ListChangeListener<String> attaquesActivesListener; // Added listener for active pokemon's attacks
     private ListChangeListener<ICarte> mainDuJoueurActifChangeListener;
     private ListChangeListener<IPokemon> changementBancJoueur;
     private MapChangeListener<String, List<String>> energiePokemonActifListener; // For active Pokemon
@@ -145,40 +152,35 @@ public class VueJoueurActif extends VBox {
         //     placerPokemonActif();
         // };
 
-        this.pokemonDuJoueurActifChangeListener = (obsPokemon, oldPkmn, newPkmn) -> { // obsPokemon for clarity
-            // This listener is on the joueurActif.pokemonActifProperty()
-            // It fires when the Pokemon instance in the active slot changes.
+        this.pokemonDuJoueurActifChangeListener = (obsPokemon, oldPkmn, newPkmn) -> {
             if (oldPkmn != null) {
-                // Detach energy listener
-                ObservableMap<String, List<String>> oldEnergieMap = oldPkmn.energieProperty();
-                if (oldEnergieMap != null && this.energiePokemonActifListener != null) {
-                    oldEnergieMap.removeListener(this.energiePokemonActifListener);
+                if (oldPkmn.energieProperty() != null && this.energiePokemonActifListener != null) {
+                    oldPkmn.energieProperty().removeListener(this.energiePokemonActifListener);
                 }
-                // Détachement de carteDuPokemonActifListener RETIRÉ
-                // if (oldPkmn.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                //    oldPkmn.cartePokemonProperty().removeListener(this.carteDuPokemonActifListener);
-                // }
+                if (oldPkmn.attaquesProperty() != null && this.attaquesActivesListener != null) { // Attaques listener detach
+                    oldPkmn.attaquesProperty().removeListener(this.attaquesActivesListener);
+                }
             }
 
-            placerPokemonActif(); // Met à jour l'affichage (nom, etc.) pour le newPkmn
+            placerPokemonActif();
+            // afficherAttaquesJouables(); // Will be called by attacksProperty listener or explicitly after this block
 
-            // Attachement des listeners au nouveau Pokémon actif
             if (newPkmn != null) {
-                // Attach energy listener
-                ObservableMap<String, List<String>> newEnergieMap = newPkmn.energieProperty();
-                if (newEnergieMap != null && this.energiePokemonActifListener != null) {
-                    newEnergieMap.addListener(this.energiePokemonActifListener);
+                if (newPkmn.energieProperty() != null && this.energiePokemonActifListener != null) {
+                    newPkmn.energieProperty().addListener(this.energiePokemonActifListener);
                 }
-                // Attachement de carteDuPokemonActifListener RETIRÉ
-                // if (newPkmn.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                //    newPkmn.cartePokemonProperty().addListener(this.carteDuPokemonActifListener);
-                // }
+                if (newPkmn.attaquesProperty() != null && this.attaquesActivesListener != null) { // Attaques listener attach
+                    newPkmn.attaquesProperty().addListener(this.attaquesActivesListener);
+                }
             } else {
-                // No new active Pokemon, ensure energy display is cleared
-                if (energiePokemonActifHBox != null) {
-                    energiePokemonActifHBox.getChildren().clear();
-                }
+                if (energiePokemonActifHBox != null) energiePokemonActifHBox.getChildren().clear();
+                if (attaquesPane != null) attaquesPane.getChildren().clear();
             }
+            afficherAttaquesJouables(); // Display/update attacks for newPkmn (or clear if null)
+        };
+
+        this.attaquesActivesListener = (ListChangeListener.Change<? extends String> change) -> {
+            afficherAttaquesJouables();
         };
 
         this.mainDuJoueurActifChangeListener = (ListChangeListener.Change<? extends ICarte> c) -> {
@@ -202,10 +204,10 @@ public class VueJoueurActif extends VBox {
                         if (oldEnergieMap != null && this.energiePokemonActifListener != null) {
                             oldEnergieMap.removeListener(this.energiePokemonActifListener);
                         }
+                        if (oldActivePkmnInstance.attaquesProperty() != null && this.attaquesActivesListener != null) { // Detach attaque listener from old player's pkmn
+                           oldActivePkmnInstance.attaquesProperty().removeListener(this.attaquesActivesListener);
+                        }
                         // Détachement de carteDuPokemonActifListener RETIRÉ
-                        // if (oldActivePkmnInstance.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                        //    oldActivePkmnInstance.cartePokemonProperty().removeListener(this.carteDuPokemonActifListener);
-                        // }
                     }
                 }
                 if (oldJoueur.getMain() != null) {
@@ -220,7 +222,8 @@ public class VueJoueurActif extends VBox {
             // Update displays for newJoueur - placerPokemonActif also handles energy
             placerPokemonActif();
             reconstruirePanneauMainComplet();
-            reconstruirePanneauBancComplet(); // Renamed from placerBanc
+            reconstruirePanneauBancComplet();
+            afficherAttaquesJouables(); // Update attacks for new player
 
             // Attach all listeners to newJoueur and its properties
             if (newJoueur != null) {
@@ -234,9 +237,9 @@ public class VueJoueurActif extends VBox {
                             newEnergieMap.addListener(this.energiePokemonActifListener);
                         }
                         // Attachement de carteDuPokemonActifListener RETIRÉ
-                        // if (newActivePkmnInstance.cartePokemonProperty() != null && this.carteDuPokemonActifListener != null) {
-                        //     newActivePkmnInstance.cartePokemonProperty().addListener(this.carteDuPokemonActifListener);
-                        // }
+                        if (newActivePkmnInstance.attaquesProperty() != null && this.attaquesActivesListener != null) { // Attach attaque listener
+                            newActivePkmnInstance.attaquesProperty().addListener(this.attaquesActivesListener);
+                        }
                     }
                 }
                 if (newJoueur.getMain() != null) {
@@ -244,10 +247,10 @@ public class VueJoueurActif extends VBox {
                 }
                 if (newJoueur.getBanc() != null) {
                     newJoueur.getBanc().addListener(this.changementBancJoueur);
-                    // TODO: If individual benched Pokemon energy listeners are to be added, do it here.
                 }
             } else { // No new player (e.g. game end), clear displays
                 if (energiePokemonActifHBox != null) energiePokemonActifHBox.getChildren().clear();
+                if (attaquesPane != null) attaquesPane.getChildren().clear(); // Clear attacks if no player
             }
         };
         this.joueurActifProperty.addListener(this.joueurActifGlobalChangeListener);
@@ -255,7 +258,7 @@ public class VueJoueurActif extends VBox {
 
     public void placerPokemonActif() {
         String texteAffichage = "Aucun Pokémon actif";
-        IPokemon currentActivePokemon = null; // To hold the current active Pokemon instance
+        IPokemon currentActivePokemon = null;
         IJoueur joueurCourant = joueurActifProperty.get();
 
         if (joueurCourant != null) {
@@ -483,6 +486,64 @@ public class VueJoueurActif extends VBox {
                 energyHBoxContainer.getChildren().add(energyLabel);
             }
         }
+        // Note: afficherAttaquesJouables() is called by the listener chain after this or by specific property changes.
+    }
+
+    private void afficherAttaquesJouables() {
+       if (attaquesPane == null) {
+           return;
+       }
+       attaquesPane.getChildren().clear();
+       IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
+
+       if (joueurCourant == null || joueurCourant.pokemonActifProperty() == null || joueurCourant.pokemonActifProperty().get() == null) {
+           return;
+       }
+
+       IPokemon pokemonActif = joueurCourant.pokemonActifProperty().get();
+       if (pokemonActif.getCartePokemon() == null) { // Pokemon instance exists, but no card (e.g. placeholder)
+            return;
+       }
+
+       List<Attaque> toutesLesAttaquesDeLaCarte = pokemonActif.getCartePokemon().getAttaques();
+       ObservableList<String> nomsAttaquesJouables = pokemonActif.attaquesProperty(); // These are the ones that can be used
+
+       for (String nomAttaqueJouable : nomsAttaquesJouables) {
+           Attaque attaqueComplete = null;
+           for (Attaque atk : toutesLesAttaquesDeLaCarte) {
+               if (atk.getNom().equals(nomAttaqueJouable)) {
+                   attaqueComplete = atk;
+                   break;
+               }
+           }
+
+           if (attaqueComplete != null) {
+               StringBuilder coutStr = new StringBuilder();
+               if (attaqueComplete.getCoutEnergie().isEmpty()){
+                   coutStr.append("(Coût: 0)");
+               } else {
+                   coutStr.append("(Coût: ");
+                   boolean first = true;
+                   for (Map.Entry<fr.umontpellier.iut.ptcgJavaFX.mecanique.Type, Integer> entry : attaqueComplete.getCoutEnergie().entrySet()) {
+                       if (!first) coutStr.append(", ");
+                       coutStr.append(entry.getKey().asLetter()).append(":").append(entry.getValue());
+                       first = false;
+                   }
+                   coutStr.append(")");
+               }
+
+               Button boutonAttaque = new Button(nomAttaqueJouable + " " + coutStr.toString());
+               boutonAttaque.getStyleClass().add("attack-button");
+               final String finalNomAttaque = nomAttaqueJouable; // For lambda
+               boutonAttaque.setOnAction(event -> {
+                   if (this.jeu != null) {
+                       this.jeu.uneAttaqueAEteChoisie(finalNomAttaque);
+                   }
+               });
+               // boutonAttaque.setDisable(!peutAttaquerCeTour); // Game logic will handle if attack is allowed via states
+               attaquesPane.getChildren().add(boutonAttaque);
+           }
+       }
     }
 
     private void mettreAJourStyleSelectionPokemon(Carte carteActuellementSelectionnee) {
