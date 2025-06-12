@@ -17,11 +17,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javafx.beans.property.ObjectProperty; // Added
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.Parent; // Added import
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox; // Added import
+import javafx.scene.layout.VBox;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -45,38 +49,47 @@ class VueJoueurActifTest {
     private SimpleObjectProperty<IPokemon> pokemonActifPropertyJoueur;
     private ObservableList<ICarte> mainDuJoueurList;
     private ObservableList<IPokemon> bancDuJoueurList;
+    private ObjectProperty<ICarte> carteSelectionneePropertyJeu; // For mockJeu
 
 
-    @BeforeAll // Temporarily commented to avoid JavaFX initialization issues
+    @BeforeAll
     static void initToolkit() {
         new JFXPanel(); // Initializes JavaFX environment
     }
 
     @BeforeEach
     void setUp() throws InterruptedException {
-        // Initialize observable properties
+        // Initialize observable properties for mocks
         joueurActifPropertyJeu = new SimpleObjectProperty<>(null);
         pokemonActifPropertyJoueur = new SimpleObjectProperty<>(null);
         mainDuJoueurList = FXCollections.observableArrayList();
         bancDuJoueurList = FXCollections.observableArrayList();
+        carteSelectionneePropertyJeu = new SimpleObjectProperty<>(null); // Initialize for mockJeu
 
         // Configure mock IJoueur properties
-        when(mockJoueurActif.pokemonActifProperty()).thenReturn((SimpleObjectProperty)pokemonActifPropertyJoueur);
-        when(mockJoueurActif.getMain()).thenReturn((ObservableList)mainDuJoueurList);
-        when(mockJoueurActif.getBanc()).thenReturn((ObservableList)bancDuJoueurList);
+        doReturn(pokemonActifPropertyJoueur).when(mockJoueurActif).pokemonActifProperty();
+        doReturn(mainDuJoueurList).when(mockJoueurActif).getMain();
+        doReturn(bancDuJoueurList).when(mockJoueurActif).getBanc();
         when(mockJoueurActif.getNom()).thenReturn("Test Player");
 
+        // Configure mock IJeu properties
+        doReturn(joueurActifPropertyJeu).when(mockJeu).joueurActifProperty();
+        doReturn(carteSelectionneePropertyJeu).when(mockJeu).carteSelectionneeProperty();
 
-        // Configure mock IJeu to return the joueurActifProperty
-        when(mockJeu.joueurActifProperty()).thenReturn((SimpleObjectProperty)joueurActifPropertyJeu);
 
-        // Instantiate VueJoueurActif on FX thread
-        Platform.runLater(() -> { // Temporarily commented
-            vueJoueurActif = new VueJoueurActif(); // Loads its own FXML
-            vueJoueurActif.setJeu(mockJeu);      // Set the game instance
-            vueJoueurActif.postInit();          // Initialize listeners and bindings
+        CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            try {
+                vueJoueurActif = new VueJoueurActif(); // Loads its own FXML
+                vueJoueurActif.setJeu(mockJeu);      // Set the game instance
+                vueJoueurActif.postInit();          // Initialize listeners and bindings
+            } finally {
+                latch.countDown();
+            }
         });
-        Thread.sleep(500); // Temporarily commented
+        if (!latch.await(10, TimeUnit.SECONDS)) { // Increased timeout for safety
+            fail("Timeout waiting for VueJoueurActif to initialize on FX thread");
+        }
     }
 
     // @Test // Temporarily commented
