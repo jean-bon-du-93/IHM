@@ -1,9 +1,9 @@
 package fr.umontpellier.iut.ptcgJavaFX.mecanique;
 
-import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.FabriqueCartes; // Si FabriqueCartes est utilisé pour créer des instances
-import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Salameche; // Exemple de carte concrète
-// import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Pikachu; // Supposons qu'une carte Pikachu existe ou créons une simple pour le test
+// import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.FabriqueCartes; // Not used in this file
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Salameche;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon;
+import fr.umontpellier.iut.ptcgJavaFX.mecanique.Type; // Added import for Type enum
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte;
 
 
@@ -11,23 +11,42 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
+import java.util.ArrayList; // Already present, but ensure Attaque is handled if needed by CartePokemon
+// import java.util.Collections; // Not strictly needed for List.of
 import java.util.List;
 
 // Stub pour une carte Pikachu si elle n'existe pas (juste pour le test)
 // Si Pikachu.java existe et est une CartePokemon, utiliser cet import à la place.
-// import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Pikachu;
+// import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Pikachu; // Actual Pikachu class
 
 class PikachuTestPokemon extends CartePokemon {
     public PikachuTestPokemon() {
-        super("Pikachu Test", 60, "pikachu-test-id", "ELECTRIQUE", null, new ArrayList<>(), 1, new ArrayList<>(), null);
-        // Note: The Carte constructor usually auto-generates an ID if "pikachu-test-id" is passed as null or if that parameter is for something else.
-        // Forcing an ID like this might conflict if the base Carte class doesn't expect it or if it's not unique.
-        // Let's assume for now the Carte constructor handles this specific ID, or use a constructor that allows setting a specific ID,
-        // or rely on auto-generated IDs and retrieve them.
-        // For simplicity and to match the prompt, using the provided ID.
+        // Adjusted to match the expected CartePokemon constructor:
+        // String name, String id, int pv, Type type, Type faiblesse, Type resistance, int coutRetraite
+        super("Pikachu Test", "pikachu-test-id", 60, Type.ELECTRIQUE, Type.COMBAT, Type.INCOLORE, 1);
+        // Assuming Type.INCOLORE for no resistance, or Type.NONE if it exists.
+        // Attaques would be added separately if needed for this test class.
     }
-    // Implémenter les méthodes abstraites si nécessaire (getNom(), etc. sont dans Carte)
+
+    // Added missing abstract method from Carte (or its superclass)
+    @Override
+    public int getRangComparaison() {
+        return 1; // Stub implementation, adjust if specific logic is needed for tests
+    }
+
+    @Override
+    public void jouer(Joueur joueur) {
+        // Stub implementation for abstract method
+    }
+
+    @Override
+    public boolean peutJouer(Joueur joueur) {
+        // Stub implementation for abstract method
+        return true; // Default for stub, allows tests to proceed
+    }
+
+    // getNom(), getPv() etc. are assumed to be concrete in CartePokemon or its superclasses.
+    // If not, they would also need to be implemented here.
 }
 
 
