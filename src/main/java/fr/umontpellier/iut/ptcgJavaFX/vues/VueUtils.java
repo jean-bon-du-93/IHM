@@ -10,7 +10,7 @@ public class VueUtils {
 
     private static final String IMAGE_PATH_CARTES = "/images/cartes/";
     private static final String IMAGE_PATH_ENERGIE_ICONES = "/images/energie/";
-    private static final String DOS_CARTE_PATH = "/images/background.jpg";
+    private static final String DOS_CARTE_PATH = "/images/cartes/BACK.png";
     // private static final String DOS_CARTE_POKEMON_PATH = "/images/cartes/BACK.png";
 
     public static ImageView creerImageViewPourCarte(ICarte carte, double largeur, double hauteur) {

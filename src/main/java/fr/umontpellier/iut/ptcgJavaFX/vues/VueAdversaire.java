@@ -32,12 +32,12 @@ public class VueAdversaire extends VBox {
     private static final int MAX_BENCH_SLOTS = 5; // Matching VueJoueurActif
 
     // Constants for image sizes
-    private static final double LARGEUR_PKMN_ACTIF_ADV = 100;
-    private static final double HAUTEUR_PKMN_ACTIF_ADV = 140;
-    private static final double LARGEUR_PKMN_BANC_ADV = 60;
-    private static final double HAUTEUR_PKMN_BANC_ADV = 84;
-    private static final double LARGEUR_CARTE_MAIN_ADV = 50;
-    private static final double HAUTEUR_CARTE_MAIN_ADV = 70;
+    private static final double LARGEUR_PKMN_ACTIF_ADV = 150;
+    private static final double HAUTEUR_PKMN_ACTIF_ADV = 225;
+    private static final double LARGEUR_PKMN_BANC_ADV = 100;
+    private static final double HAUTEUR_PKMN_BANC_ADV = 140;
+    private static final double LARGEUR_CARTE_MAIN_ADV = 150;
+    private static final double HAUTEUR_CARTE_MAIN_ADV = 225;
     private static final double TAILLE_ICONE_ENERGIE_ADV = 18;
     private static final double LARGEUR_DOS_PETIT = 30;
     private static final double HAUTEUR_DOS_PETIT = 42;

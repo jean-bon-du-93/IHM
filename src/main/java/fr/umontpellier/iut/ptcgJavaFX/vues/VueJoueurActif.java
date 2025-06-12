@@ -40,12 +40,12 @@ public class VueJoueurActif extends VBox {
     private static final int MAX_BENCH_SLOTS = 5; // Added constant
 
     // Constants for image sizes
-    private static final double LARGEUR_CARTE_MAIN = 70;
-    private static final double HAUTEUR_CARTE_MAIN = 98;
-    private static final double LARGEUR_PKMN_ACTIF = 100;
-    private static final double HAUTEUR_PKMN_ACTIF = 140;
-    private static final double LARGEUR_PKMN_BANC = 60;
-    private static final double HAUTEUR_PKMN_BANC = 84;
+    private static final double LARGEUR_CARTE_MAIN = 150;
+    private static final double HAUTEUR_CARTE_MAIN = 225;
+    private static final double LARGEUR_PKMN_ACTIF = 150;
+    private static final double HAUTEUR_PKMN_ACTIF = 225;
+    private static final double LARGEUR_PKMN_BANC = 100;
+    private static final double HAUTEUR_PKMN_BANC = 140;
     private static final double TAILLE_ICONE_ENERGIE = 18;
     private static final double LARGEUR_DOS_PIOCHE_RECOMPENSE = 45;
     private static final double HAUTEUR_DOS_PIOCHE_RECOMPENSE = 63;
