@@ -12,9 +12,32 @@
       stylesheets="@../css/style.css"
       styleClass="player-area"
       spacing="10">
+
     <Label fx:id="nomDuJoueurLabel" styleClass="text-18px"/>
-    <Button fx:id="pokemonActifButton" styleClass="card-button text-18px" onAction="#onPokemonActifButtonClick"/>
-    <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER_LEFT"/>
+
+    <!-- Main HBox for Active Pokemon and Bench -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <!-- VBox for Active Pokemon -->
+        <VBox spacing="5" alignment="CENTER_LEFT">
+            <children>
+                <Button fx:id="pokemonActifButton" styleClass="card-button text-18px" onAction="#onPokemonActifButtonClick"/>
+                <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER_LEFT"/>
+            </children>
+        </VBox>
+
+        <!-- VBox for Bench -->
+        <VBox spacing="5" alignment="CENTER_LEFT">
+            <children>
+                <Label text="Banc du joueur:" styleClass="text-14px">
+                    <VBox.margin>
+                        <!-- Adjusted margin, original had Insets top="5". Now it's within a new VBox. -->
+                        <Insets top="0" bottom="2" left="0" right="0"/>
+                    </VBox.margin>
+                </Label>
+                <HBox fx:id="panneauBancHBox" spacing="5" alignment="CENTER"/>
+            </children>
+        </VBox>
+    </HBox>
 
     <Label text="Attaques disponibles:" styleClass="text-14px">
         <VBox.margin>
@@ -28,17 +51,13 @@
         </VBox.margin>
     </FlowPane>
 
-    <Label text="Main du joueur:" styleClass="text-14px"> <!-- Added label for clarity -->
+    <Label text="Main du joueur:" styleClass="text-14px">
         <VBox.margin>
             <Insets top="5" bottom="2"/>
         </VBox.margin>
     </Label>
     <HBox fx:id="panneauMainHBox" spacing="5"/>
-    <Label text="Banc du joueur:" styleClass="text-14px"> <!-- Added label for clarity -->
-        <VBox.margin>
-            <Insets top="5" bottom="2"/>
-        </VBox.margin>
-    </Label>
-    <HBox fx:id="panneauBancHBox" spacing="5" alignment="CENTER"/>
+
     <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
+
 </fx:root>

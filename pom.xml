@@ -88,8 +88,8 @@
 
                     <!--
                     <argLine>
-                        --add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-                        --add-exports=javafx.base/com.sun.javafx.logging=ALL-UNNAMED
+                        - -add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                        - -add-exports=javafx.base/com.sun.javafx.logging=ALL-UNNAMED
                     </argLine>
                     -->
                     <!--

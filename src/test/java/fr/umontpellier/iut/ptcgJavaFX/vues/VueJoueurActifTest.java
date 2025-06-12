@@ -18,7 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Parent; // Added import
 import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox; // Added import
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -44,10 +47,10 @@ class VueJoueurActifTest {
     private ObservableList<IPokemon> bancDuJoueurList;
 
 
-    // @BeforeAll // Temporarily commented to avoid JavaFX initialization issues
-    // static void initToolkit() {
-    //     new JFXPanel(); // Initializes JavaFX environment
-    // }
+    @BeforeAll // Temporarily commented to avoid JavaFX initialization issues
+    static void initToolkit() {
+        new JFXPanel(); // Initializes JavaFX environment
+    }
 
     @BeforeEach
     void setUp() throws InterruptedException {
@@ -68,12 +71,12 @@ class VueJoueurActifTest {
         when(mockJeu.joueurActifProperty()).thenReturn((SimpleObjectProperty)joueurActifPropertyJeu);
 
         // Instantiate VueJoueurActif on FX thread
-        // Platform.runLater(() -> { // Temporarily commented
-        //     vueJoueurActif = new VueJoueurActif(); // Loads its own FXML
-        //     vueJoueurActif.setJeu(mockJeu);      // Set the game instance
-        //     vueJoueurActif.postInit();          // Initialize listeners and bindings
-        // });
-        // Thread.sleep(500); // Temporarily commented
+        Platform.runLater(() -> { // Temporarily commented
+            vueJoueurActif = new VueJoueurActif(); // Loads its own FXML
+            vueJoueurActif.setJeu(mockJeu);      // Set the game instance
+            vueJoueurActif.postInit();          // Initialize listeners and bindings
+        });
+        Thread.sleep(500); // Temporarily commented
     }
 
     // @Test // Temporarily commented
@@ -171,5 +174,29 @@ class VueJoueurActifTest {
         //     verify(mockJeu).passerAEteChoisi();
         // });
         // Thread.sleep(500); // Temporarily commented
+    }
+
+    @Test
+    void testActivePokemonAndBenchAreOnSameLine() {
+        assertNotNull(vueJoueurActif, "vueJoueurActif should be initialized before this test runs.");
+        Button pokemonActifButton = (Button) vueJoueurActif.lookup("#pokemonActifButton");
+        HBox panneauBancHBox = (HBox) vueJoueurActif.lookup("#panneauBancHBox");
+
+        assertNotNull(pokemonActifButton, "Pokemon actif button should exist.");
+        assertNotNull(panneauBancHBox, "Panneau banc HBox should exist.");
+
+        Parent parentActivePokemon = pokemonActifButton.getParent();
+        Parent parentBench = panneauBancHBox.getParent();
+
+        assertNotNull(parentActivePokemon, "Parent of active Pokemon button should not be null.");
+        assertNotNull(parentBench, "Parent of bench HBox should not be null.");
+
+        assertTrue(parentActivePokemon instanceof VBox, "Parent of active Pokemon button should be a VBox.");
+        assertTrue(parentBench instanceof VBox, "Parent of bench HBox should be a VBox.");
+
+        assertNotNull(parentActivePokemon.getParent(), "Grandparent of active Pokemon button should not be null.");
+        assertTrue(parentActivePokemon.getParent() instanceof HBox, "Grandparent of active Pokemon (parent of its VBox) should be an HBox.");
+        // No need to check grandparent of bench separately for type if we assert they are the same object.
+        assertSame(parentActivePokemon.getParent(), parentBench.getParent(), "The VBox of active Pokemon and the VBox of bench should share the same parent HBox.");
     }
 }
