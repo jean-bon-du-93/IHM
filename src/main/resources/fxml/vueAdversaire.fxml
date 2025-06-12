@@ -19,23 +19,37 @@
         </VBox.margin>
     </Label>
 
-    <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
-    <Button fx:id="opponentPokemonActifButton" text="Pokemon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
-    <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
+    <!-- New Main HBox for Active Pokemon and Bench -->
+    <HBox spacing="20" alignment="TOP_LEFT">
+        <children>
+            <!-- Inner VBox for Active Pokemon Area -->
+            <VBox spacing="5" alignment="TOP_LEFT">
+                <children>
+                    <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
+                    <Button fx:id="opponentPokemonActifButton" text="Pokemon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
+                    <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
+                        <!-- Removed VBox.margin as parent VBox now handles spacing -->
+                    </HBox>
+                </children>
+            </VBox>
+
+            <!-- Inner VBox for Bench Area -->
+            <VBox spacing="5" alignment="TOP_LEFT">
+                <children>
+                    <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
+                    <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70">
+                        <!-- Removed VBox.margin as parent VBox now handles spacing -->
+                    </HBox>
+                </children>
+            </VBox>
+        </children>
         <VBox.margin>
-            <Insets bottom="10.0" />
+            <Insets bottom="10.0" /> <!-- Add some margin below the new HBox -->
         </VBox.margin>
     </HBox>
 
     <Label text="Main de l'adversaire:" styleClass="text-18px"/>
     <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT" minHeight="50"> <!-- Min height for card backs -->
-        <VBox.margin>
-            <Insets bottom="10.0" />
-        </VBox.margin>
-    </HBox>
-
-    <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
-    <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70"> <!-- Min height for bench cards -->
         <VBox.margin>
             <Insets bottom="10.0" />
         </VBox.margin>
