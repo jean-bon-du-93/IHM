@@ -71,6 +71,11 @@ public class Pokemon implements IPokemon {
      */
     private ObservableMap<String, List<String>> energie;
 
+    private BooleanProperty estEmpoisonne = new SimpleBooleanProperty(false);
+    private BooleanProperty estEndormi = new SimpleBooleanProperty(false);
+    private BooleanProperty estParalyse = new SimpleBooleanProperty(false);
+    private BooleanProperty estConfus = new SimpleBooleanProperty(false);
+
     public Pokemon(CartePokemon cartePokemon) {
         this.cartePokemon = new SimpleObjectProperty<>(cartePokemon);
         cartes = FXCollections.observableArrayList();
@@ -157,6 +162,10 @@ public class Pokemon implements IPokemon {
     public void retirerEffets() {
         estBrule.setValue(false);
         estProtegeEffetsAttaques.setValue(false);
+        estEmpoisonne.setValue(false);
+        estEndormi.setValue(false);
+        estParalyse.setValue(false);
+        estConfus.setValue(false);
     }
 
     /**
@@ -394,5 +403,21 @@ public class Pokemon implements IPokemon {
     @Override
     public BooleanProperty estProtegeEffetsAttaquesProperty() {
         return estProtegeEffetsAttaques;
+    }
+
+    public BooleanProperty estEmpoisonneProperty() {
+        return estEmpoisonne;
+    }
+
+    public BooleanProperty estEndormiProperty() {
+        return estEndormi;
+    }
+
+    public BooleanProperty estParalyseProperty() {
+        return estParalyse;
+    }
+
+    public BooleanProperty estConfusProperty() {
+        return estConfus;
     }
 }

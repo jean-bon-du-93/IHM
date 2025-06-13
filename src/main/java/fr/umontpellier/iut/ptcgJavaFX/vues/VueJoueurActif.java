@@ -349,6 +349,7 @@ public class VueJoueurActif extends VBox {
             pokemonActifVBox.getChildren().removeIf(node -> "weaknessLabelActif".equals(node.getId()));
             pokemonActifVBox.getChildren().removeIf(node -> "resistanceLabelActif".equals(node.getId()));
             pokemonActifVBox.getChildren().removeIf(node -> "retreatLabelActif".equals(node.getId()));
+            pokemonActifVBox.getChildren().removeIf(node -> "statusBoxActif".equals(node.getId())); // Remove status HBox
         }
 
         if (pokemonActifButton != null) {
@@ -430,6 +431,43 @@ public class VueJoueurActif extends VBox {
                     retreatLabel.getStyleClass().add("hp-label"); // Using same style for now
                     retreatLabel.setText("Retreat: " + retreatCost);
                     pokemonActifVBox.getChildren().add(retreatLabel);
+
+                    // Status Conditions Display
+                    HBox statusConditionsHBox = new HBox();
+                    statusConditionsHBox.setId("statusBoxActif");
+                    statusConditionsHBox.setSpacing(5);
+
+                    // Burned
+                    Label brnLabel = new Label("BRN");
+                    brnLabel.getStyleClass().add("status-label");
+                    brnLabel.visibleProperty().bind(pokemonForBinding.estBruleProperty());
+                    statusConditionsHBox.getChildren().add(brnLabel);
+
+                    // Poisoned
+                    Label psnLabel = new Label("PSN");
+                    psnLabel.getStyleClass().add("status-label");
+                    psnLabel.visibleProperty().bind(pokemonForBinding.estEmpoisonneProperty());
+                    statusConditionsHBox.getChildren().add(psnLabel);
+
+                    // Asleep
+                    Label slpLabel = new Label("SLP");
+                    slpLabel.getStyleClass().add("status-label");
+                    slpLabel.visibleProperty().bind(pokemonForBinding.estEndormiProperty());
+                    statusConditionsHBox.getChildren().add(slpLabel);
+
+                    // Paralyzed
+                    Label parLabel = new Label("PAR");
+                    parLabel.getStyleClass().add("status-label");
+                    parLabel.visibleProperty().bind(pokemonForBinding.estParalyseProperty());
+                    statusConditionsHBox.getChildren().add(parLabel);
+
+                    // Confused
+                    Label cnfLabel = new Label("CNF");
+                    cnfLabel.getStyleClass().add("status-label");
+                    cnfLabel.visibleProperty().bind(pokemonForBinding.estConfusProperty());
+                    statusConditionsHBox.getChildren().add(cnfLabel);
+
+                    pokemonActifVBox.getChildren().add(statusConditionsHBox);
                 }
             } else {
                 pokemonActifButton.setGraphic(VueUtils.creerImageViewPourDosCarte(LARGEUR_PKMN_ACTIF, HAUTEUR_PKMN_ACTIF)); // Show card back

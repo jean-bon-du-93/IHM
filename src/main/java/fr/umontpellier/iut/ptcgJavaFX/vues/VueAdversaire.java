@@ -271,6 +271,7 @@ public class VueAdversaire extends VBox {
             opponentPokemonActifVBox.getChildren().removeIf(node -> "weaknessLabelOpponentActif".equals(node.getId()));
             opponentPokemonActifVBox.getChildren().removeIf(node -> "resistanceLabelOpponentActif".equals(node.getId()));
             opponentPokemonActifVBox.getChildren().removeIf(node -> "retreatLabelOpponentActif".equals(node.getId()));
+            opponentPokemonActifVBox.getChildren().removeIf(node -> "statusBoxOpponentActif".equals(node.getId())); // Remove status HBox
         }
 
         if (opponentPokemonActifButton != null) { // This button is inside opponentPokemonActifVBox
@@ -349,6 +350,43 @@ public class VueAdversaire extends VBox {
                     retreatLabel.getStyleClass().add("hp-label"); // Using same style for now
                     retreatLabel.setText("Retreat: " + retreatCost);
                     opponentPokemonActifVBox.getChildren().add(retreatLabel);
+
+                    // Status Conditions Display
+                    HBox statusConditionsHBox = new HBox();
+                    statusConditionsHBox.setId("statusBoxOpponentActif");
+                    statusConditionsHBox.setSpacing(5);
+
+                    // Burned
+                    Label brnLabel = new Label("BRN");
+                    brnLabel.getStyleClass().add("status-label");
+                    brnLabel.visibleProperty().bind(opponentPokemonForBinding.estBruleProperty());
+                    statusConditionsHBox.getChildren().add(brnLabel);
+
+                    // Poisoned
+                    Label psnLabel = new Label("PSN");
+                    psnLabel.getStyleClass().add("status-label");
+                    psnLabel.visibleProperty().bind(opponentPokemonForBinding.estEmpoisonneProperty());
+                    statusConditionsHBox.getChildren().add(psnLabel);
+
+                    // Asleep
+                    Label slpLabel = new Label("SLP");
+                    slpLabel.getStyleClass().add("status-label");
+                    slpLabel.visibleProperty().bind(opponentPokemonForBinding.estEndormiProperty());
+                    statusConditionsHBox.getChildren().add(slpLabel);
+
+                    // Paralyzed
+                    Label parLabel = new Label("PAR");
+                    parLabel.getStyleClass().add("status-label");
+                    parLabel.visibleProperty().bind(opponentPokemonForBinding.estParalyseProperty());
+                    statusConditionsHBox.getChildren().add(parLabel);
+
+                    // Confused
+                    Label cnfLabel = new Label("CNF");
+                    cnfLabel.getStyleClass().add("status-label");
+                    cnfLabel.visibleProperty().bind(opponentPokemonForBinding.estConfusProperty());
+                    statusConditionsHBox.getChildren().add(cnfLabel);
+
+                    opponentPokemonActifVBox.getChildren().add(statusConditionsHBox);
                 }
             } else {
                 // Display card back or clear
