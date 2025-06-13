@@ -205,3 +205,13 @@
     -fx-text-fill: #2c5e2e; /* A shade of dark green */
     -fx-padding: 1px 0px 1px 3px; /* Top, Right, Bottom, Left padding */
 }
+
+.status-label {
+    -fx-font-size: 9px;
+    -fx-padding: 2px 4px; /* Adjusted padding slightly */
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-background-color: #d3d3d3; /* LightGray */
+    -fx-text-fill: #000000; /* Black text */
+    -fx-font-weight: bold;
+}

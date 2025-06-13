@@ -18,6 +18,11 @@ public interface IPokemon {
     BooleanProperty estBruleProperty();
     BooleanProperty estProtegeEffetsAttaquesProperty();
 
+    BooleanProperty estEmpoisonneProperty();
+    BooleanProperty estEndormiProperty();
+    BooleanProperty estParalyseProperty();
+    BooleanProperty estConfusProperty();
+
     ICarte getCartePokemon();
 
 }
