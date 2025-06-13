@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PokemonTCGIHM extends Application {
 
-    public static final double pourcentageEcran = 1;
+    public static final double pourcentageEcran = .65;
     private VueDuJeu vueDuJeu;
     private VueChoixJoueurs vueChoixJoueurs;
     private Stage primaryStage;
