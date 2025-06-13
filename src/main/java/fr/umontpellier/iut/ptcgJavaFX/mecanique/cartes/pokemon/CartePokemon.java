@@ -62,6 +62,11 @@ public abstract class CartePokemon extends Carte {
         return resistance;
     }
 
+    // Add this new method
+    public int getCoutRetraite() {
+        return this.coutRetraite; // Access the private final field
+    }
+
     public int getCoutRetraite(Pokemon pokemon) {
         return coutRetraite;
     }

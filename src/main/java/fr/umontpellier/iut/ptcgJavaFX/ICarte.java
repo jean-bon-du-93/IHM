@@ -8,4 +8,8 @@ public interface ICarte {
     String getNom();
     String getCode();
     Type getTypeEnergie();
+
+    fr.umontpellier.iut.ptcgJavaFX.mecanique.Type getFaiblesse();
+    fr.umontpellier.iut.ptcgJavaFX.mecanique.Type getResistance();
+    int getCoutRetraite();
 }
