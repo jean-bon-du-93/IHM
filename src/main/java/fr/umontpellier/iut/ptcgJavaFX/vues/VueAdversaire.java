@@ -281,21 +281,12 @@ public class VueAdversaire extends VBox {
                     hpLabel.setId("hpLabelOpponentActif"); // For future removal
                     hpLabel.getStyleClass().add("hp-label"); // Add style class
 
-                    final IPokemon finalPkmnActif = pkmnActif; // For use in lambda
+                    // Bind HP text property to the pointsDeVieProperty of the current pkmnActif
                     hpLabel.textProperty().bind(
-                        Bindings.createStringBinding(() -> {
-                            // Re-fetch opponent and their active Pokemon inside binding
-                            IJoueur adv = this.adversaire; // Assuming 'this.adversaire' is the current opponent
-                            if (adv != null) {
-                                IPokemon currentOpponentActivePkmn = adv.pokemonActifProperty().get();
-                                if (currentOpponentActivePkmn != null && currentOpponentActivePkmn.getCartePokemon() != null) {
-                                    return "HP: " + currentOpponentActivePkmn.pointsDeVieProperty().get();
-                                }
-                            }
-                            return "HP: --";
-                        }, this.adversaire.pokemonActifProperty(), // મુખ્ય અવલંબન
-                           pkmnActif.pointsDeVieProperty(),       // HP ಬದಲಾವಣೆಗಳು
-                           pkmnActif.cartePokemonProperty())      // ಕಾರ್ಡ್ ಬದಲಾವಣೆಗಳು
+                        Bindings.createStringBinding(
+                            () -> "HP: " + pkmnActif.pointsDeVieProperty().get(),
+                            pkmnActif.pointsDeVieProperty() // Dependency
+                        )
                     );
 
                     // The VBox contains: Label (title), Button (pokemon), HBox (energy)
