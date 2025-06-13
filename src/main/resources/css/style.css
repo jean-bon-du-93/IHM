@@ -198,3 +198,10 @@
     /* -fx-border-width: 1px; */
     /* -fx-padding: 5px; */
 }
+
+.hp-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c5e2e; /* A shade of dark green */
+    -fx-padding: 1px 0px 1px 3px; /* Top, Right, Bottom, Left padding */
+}

@@ -18,7 +18,7 @@
     <!-- Main HBox for Active Pokemon and Bench -->
     <HBox spacing="20" alignment="CENTER_LEFT">
         <!-- VBox for Active Pokemon -->
-        <VBox spacing="5" alignment="CENTER_LEFT">
+        <VBox fx:id="pokemonActifVBox" spacing="5" alignment="CENTER_LEFT">
             <children>
                 <Button fx:id="pokemonActifButton" styleClass="card-button text-18px" onAction="#onPokemonActifButtonClick"/>
                 <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER_LEFT"/>

@@ -48,6 +48,7 @@ public class VueAdversaire extends VBox {
     @FXML Label nomAdversaireLabel;
     @FXML Button opponentPokemonActifButton; // Changed from Label to Button and renamed
     @FXML HBox energiePokemonActifAdversaireHBox; // Added
+    @FXML private VBox opponentPokemonActifVBox; // Added for HP display
     @FXML HBox bancAdversaireHBox;
     @FXML HBox panneauMainAdversaireHBox; // Added
     // mainAdversaireLabel is still used for count, but now part of a different logical group in FXML
@@ -263,17 +264,68 @@ public class VueAdversaire extends VBox {
             pkmnActif = adversaire.pokemonActifProperty().get();
         }
 
-        if (opponentPokemonActifButton != null) {
+        // Remove existing HP label if present
+        if (opponentPokemonActifVBox != null) {
+            opponentPokemonActifVBox.getChildren().removeIf(node -> "hpLabelOpponentActif".equals(node.getId()));
+        }
+
+        if (opponentPokemonActifButton != null) { // This button is inside opponentPokemonActifVBox
             if (pkmnActif != null && pkmnActif.getCartePokemon() != null) {
                 ImageView imageView = VueUtils.creerImageViewPourCarte(pkmnActif.getCartePokemon(), LARGEUR_PKMN_ACTIF_ADV, HAUTEUR_PKMN_ACTIF_ADV);
                 opponentPokemonActifButton.setGraphic(imageView);
                 opponentPokemonActifButton.setText(null); // Remove text
-                // Tooltip tooltip = new Tooltip(pkmnActif.getCartePokemon().getNom());
-                // opponentPokemonActifButton.setTooltip(tooltip);
+
+                // Add HP Label
+                if (opponentPokemonActifVBox != null) {
+                    Label hpLabel = new Label();
+                    hpLabel.setId("hpLabelOpponentActif"); // For future removal
+                    hpLabel.getStyleClass().add("hp-label"); // Add style class
+
+                    final IPokemon finalPkmnActif = pkmnActif; // For use in lambda
+                    hpLabel.textProperty().bind(
+                        Bindings.createStringBinding(() -> {
+                            // Re-fetch opponent and their active Pokemon inside binding
+                            IJoueur adv = this.adversaire; // Assuming 'this.adversaire' is the current opponent
+                            if (adv != null) {
+                                IPokemon currentOpponentActivePkmn = adv.pokemonActifProperty().get();
+                                if (currentOpponentActivePkmn != null && currentOpponentActivePkmn.getCartePokemon() != null) {
+                                    return "HP: " + currentOpponentActivePkmn.pointsDeVieProperty().get();
+                                }
+                            }
+                            return "HP: --";
+                        }, this.adversaire.pokemonActifProperty(), // મુખ્ય અવલંબન
+                           pkmnActif.pointsDeVieProperty(),       // HP ಬದಲಾವಣೆಗಳು
+                           pkmnActif.cartePokemonProperty())      // ಕಾರ್ಡ್ ಬದಲಾವಣೆಗಳು
+                    );
+
+                    // The VBox contains: Label (title), Button (pokemon), HBox (energy)
+                    // We want to add HP label after the button, so at index 2
+                    if (opponentPokemonActifVBox.getChildren().size() > 1) { // Check if button is there (at least title + button)
+                        // Check if energiePokemonActifAdversaireHBox is present to insert before it
+                        int energyBoxIndex = opponentPokemonActifVBox.getChildren().indexOf(energiePokemonActifAdversaireHBox);
+                        if (energyBoxIndex != -1) {
+                             opponentPokemonActifVBox.getChildren().add(energyBoxIndex, hpLabel);
+                        } else {
+                            // Fallback: if energy box not found, try to add after button or at end
+                            int buttonIndex = opponentPokemonActifVBox.getChildren().indexOf(opponentPokemonActifButton);
+                            if (buttonIndex != -1 && buttonIndex + 1 <= opponentPokemonActifVBox.getChildren().size() ) {
+                                opponentPokemonActifVBox.getChildren().add(buttonIndex + 1, hpLabel);
+                            } else {
+                                opponentPokemonActifVBox.getChildren().add(hpLabel); // Add at the end
+                            }
+                        }
+                    } else {
+                         opponentPokemonActifVBox.getChildren().add(hpLabel); // Add if VBox has fewer than 2 children initially
+                    }
+                }
             } else {
                 // Display card back or clear
                 opponentPokemonActifButton.setGraphic(VueUtils.creerImageViewPourDosCarte(LARGEUR_PKMN_ACTIF_ADV, HAUTEUR_PKMN_ACTIF_ADV));
                 opponentPokemonActifButton.setText(null);
+                // Ensure HP label is also cleared if no active Pokemon
+                if (opponentPokemonActifVBox != null) {
+                    opponentPokemonActifVBox.getChildren().removeIf(node -> "hpLabelOpponentActif".equals(node.getId()));
+                }
             }
         }
         rafraichirEnergiePokemonActifAdversaire();
@@ -338,6 +390,18 @@ public class VueAdversaire extends VBox {
             }
         });
 
+        // HP Label for opponent's benched Pokemon
+        Label hpLabel = new Label();
+        hpLabel.getStyleClass().add("hp-label"); // Add style class
+        hpLabel.textProperty().bind(
+            Bindings.createStringBinding(() -> {
+                if (pokemon != null && pokemon.getCartePokemon() != null) { // Check pokemon & card
+                    return "HP: " + pokemon.pointsDeVieProperty().get();
+                }
+                return "HP: --";
+            }, pokemon.pointsDeVieProperty(), pokemon.cartePokemonProperty()) // Observe these for changes
+        );
+
         HBox energieHBox = new HBox(2);
         energieHBox.setAlignment(Pos.CENTER);
         ObservableMap<String, List<String>> energieMap = pokemon.energieProperty();
@@ -367,7 +431,7 @@ public class VueAdversaire extends VBox {
                  }
             }
         }
-        pokemonCardContainer.getChildren().addAll(pokemonButton, energieHBox);
+        pokemonCardContainer.getChildren().addAll(pokemonButton, hpLabel, energieHBox);
 
         return pokemonCardContainer;
     }
