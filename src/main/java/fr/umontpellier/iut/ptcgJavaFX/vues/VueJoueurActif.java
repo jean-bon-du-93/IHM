@@ -358,24 +358,12 @@ public class VueJoueurActif extends VBox {
                     Label hpLabel = new Label();
                     hpLabel.setId("hpLabelActif"); // For future removal
                     hpLabel.getStyleClass().add("hp-label"); // Add style class
-                    // Final variable for use in lambda expression
-                    final IPokemon finalCurrentActivePokemon = currentActivePokemon;
+                    // Bind HP text property to the pointsDeVieProperty of the currentActivePokemon
                     hpLabel.textProperty().bind(
-                        Bindings.createStringBinding(() -> {
-                            // It's safer to re-fetch the active Pokemon and its properties inside the binding computation,
-                            // as the binding might be evaluated later when the state has changed.
-                            IJoueur currentJ = joueurActifProperty.get();
-                            if (currentJ != null) {
-                                IPokemon activePkmn = currentJ.pokemonActifProperty().get();
-                                if (activePkmn != null && activePkmn.getCartePokemon() != null) {
-                                    return "HP: " + activePkmn.pointsDeVieProperty().get();
-                                }
-                            }
-                            return "HP: --";
-                        }, joueurActifProperty, // Rebind if joueurActifProperty changes
-                           (currentActivePokemon != null ? currentActivePokemon.pokemonActifProperty() : new SimpleObjectProperty<>(null)), // Rebind if the specific pokemon instance on joueurActif changes
-                           (currentActivePokemon != null ? currentActivePokemon.pointsDeVieProperty() : new SimpleObjectProperty<>(0)), // Rebind if HP changes
-                           (currentActivePokemon != null ? currentActivePokemon.cartePokemonProperty() : new SimpleObjectProperty<>(null))) // Rebind if card changes
+                        Bindings.createStringBinding(
+                            () -> "HP: " + currentActivePokemon.pointsDeVieProperty().get(),
+                            currentActivePokemon.pointsDeVieProperty() // Dependency
+                        )
                     );
                     // Add HP label at index 1 (after button, before energy HBox)
                     // Ensure there's at least one child (the button) before trying to add at index 1
