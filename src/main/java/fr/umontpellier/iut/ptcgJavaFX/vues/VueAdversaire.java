@@ -268,6 +268,9 @@ public class VueAdversaire extends VBox {
         // Remove existing HP label if present
         if (opponentPokemonActifVBox != null) {
             opponentPokemonActifVBox.getChildren().removeIf(node -> "hpLabelOpponentActif".equals(node.getId()));
+            opponentPokemonActifVBox.getChildren().removeIf(node -> "weaknessLabelOpponentActif".equals(node.getId()));
+            opponentPokemonActifVBox.getChildren().removeIf(node -> "resistanceLabelOpponentActif".equals(node.getId()));
+            opponentPokemonActifVBox.getChildren().removeIf(node -> "retreatLabelOpponentActif".equals(node.getId()));
         }
 
         if (opponentPokemonActifButton != null) { // This button is inside opponentPokemonActifVBox
@@ -311,6 +314,41 @@ public class VueAdversaire extends VBox {
                     } else {
                          opponentPokemonActifVBox.getChildren().add(hpLabel); // Add if VBox has fewer than 2 children initially
                     }
+
+                    // Get ICarte for additional properties
+                    ICarte carte = opponentPokemonForBinding.getCartePokemon();
+
+                    // Weakness Display
+                    fr.umontpellier.iut.ptcgJavaFX.mecanique.Type faiblesseType = carte.getFaiblesse();
+                    Label weaknessLabel = new Label();
+                    weaknessLabel.setId("weaknessLabelOpponentActif");
+                    weaknessLabel.getStyleClass().add("hp-label"); // Using same style for now
+                    if (faiblesseType != null) {
+                        weaknessLabel.setText("Weakness: " + faiblesseType.name());
+                    } else {
+                        weaknessLabel.setText("Weakness: None");
+                    }
+                    opponentPokemonActifVBox.getChildren().add(weaknessLabel);
+
+                    // Resistance Display
+                    fr.umontpellier.iut.ptcgJavaFX.mecanique.Type resistanceType = carte.getResistance();
+                    Label resistanceLabel = new Label();
+                    resistanceLabel.setId("resistanceLabelOpponentActif");
+                    resistanceLabel.getStyleClass().add("hp-label"); // Using same style for now
+                    if (resistanceType != null) {
+                        resistanceLabel.setText("Resistance: " + resistanceType.name());
+                    } else {
+                        resistanceLabel.setText("Resistance: None");
+                    }
+                    opponentPokemonActifVBox.getChildren().add(resistanceLabel);
+
+                    // Retreat Cost Display
+                    int retreatCost = carte.getCoutRetraite();
+                    Label retreatLabel = new Label();
+                    retreatLabel.setId("retreatLabelOpponentActif");
+                    retreatLabel.getStyleClass().add("hp-label"); // Using same style for now
+                    retreatLabel.setText("Retreat: " + retreatCost);
+                    opponentPokemonActifVBox.getChildren().add(retreatLabel);
                 }
             } else {
                 // Display card back or clear

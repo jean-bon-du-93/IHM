@@ -346,6 +346,9 @@ public class VueJoueurActif extends VBox {
         // Remove existing HP label if present
         if (pokemonActifVBox != null) {
             pokemonActifVBox.getChildren().removeIf(node -> "hpLabelActif".equals(node.getId()));
+            pokemonActifVBox.getChildren().removeIf(node -> "weaknessLabelActif".equals(node.getId()));
+            pokemonActifVBox.getChildren().removeIf(node -> "resistanceLabelActif".equals(node.getId()));
+            pokemonActifVBox.getChildren().removeIf(node -> "retreatLabelActif".equals(node.getId()));
         }
 
         if (pokemonActifButton != null) {
@@ -392,6 +395,41 @@ public class VueJoueurActif extends VBox {
                     else {
                         pokemonActifVBox.getChildren().add(hpLabel); // Add as first element if VBox is empty or button not found
                     }
+
+                    // Get ICarte for additional properties
+                    ICarte carte = pokemonForBinding.getCartePokemon();
+
+                    // Weakness Display
+                    fr.umontpellier.iut.ptcgJavaFX.mecanique.Type faiblesseType = carte.getFaiblesse();
+                    Label weaknessLabel = new Label();
+                    weaknessLabel.setId("weaknessLabelActif");
+                    weaknessLabel.getStyleClass().add("hp-label"); // Using same style for now
+                    if (faiblesseType != null) {
+                        weaknessLabel.setText("Weakness: " + faiblesseType.name());
+                    } else {
+                        weaknessLabel.setText("Weakness: None");
+                    }
+                    pokemonActifVBox.getChildren().add(weaknessLabel);
+
+                    // Resistance Display
+                    fr.umontpellier.iut.ptcgJavaFX.mecanique.Type resistanceType = carte.getResistance();
+                    Label resistanceLabel = new Label();
+                    resistanceLabel.setId("resistanceLabelActif");
+                    resistanceLabel.getStyleClass().add("hp-label"); // Using same style for now
+                    if (resistanceType != null) {
+                        resistanceLabel.setText("Resistance: " + resistanceType.name());
+                    } else {
+                        resistanceLabel.setText("Resistance: None");
+                    }
+                    pokemonActifVBox.getChildren().add(resistanceLabel);
+
+                    // Retreat Cost Display
+                    int retreatCost = carte.getCoutRetraite();
+                    Label retreatLabel = new Label();
+                    retreatLabel.setId("retreatLabelActif");
+                    retreatLabel.getStyleClass().add("hp-label"); // Using same style for now
+                    retreatLabel.setText("Retreat: " + retreatCost);
+                    pokemonActifVBox.getChildren().add(retreatLabel);
                 }
             } else {
                 pokemonActifButton.setGraphic(VueUtils.creerImageViewPourDosCarte(LARGEUR_PKMN_ACTIF, HAUTEUR_PKMN_ACTIF)); // Show card back

@@ -102,4 +102,19 @@ public abstract class Carte implements Comparable<Carte>, ICarte {
         return this.nom.compareTo(o.nom);
     }
 
+    // Add these methods to Carte.java
+    @Override
+    public fr.umontpellier.iut.ptcgJavaFX.mecanique.Type getFaiblesse() {
+        return null; // Default for non-Pokemon cards
+    }
+
+    @Override
+    public fr.umontpellier.iut.ptcgJavaFX.mecanique.Type getResistance() {
+        return null; // Default for non-Pokemon cards
+    }
+
+    @Override
+    public int getCoutRetraite() {
+        return 0; // Default for non-Pokemon cards
+    }
 }
