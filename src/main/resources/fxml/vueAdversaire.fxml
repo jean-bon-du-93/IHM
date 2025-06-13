@@ -13,7 +13,7 @@
          xmlns:fx="http://javafx.com/fxml/1"
          xmlns="http://javafx.com/javafx/11.0.1">
 
-    <Label fx:id="nomAdversaireLabel" styleClass="text-18px" text="Nom Adversaire">
+    <Label fx:id="nomAdversaireLabel" styleClass="text-18px" text="Nom de l'Adversaire">
         <VBox.margin>
             <Insets bottom="5.0" />
         </VBox.margin>
@@ -25,10 +25,10 @@
             <!-- Inner VBox for Active Pokemon Area -->
             <VBox fx:id="opponentPokemonActifVBox" spacing="5" alignment="TOP_LEFT">
                 <children>
-                    <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
-                    <Button fx:id="opponentPokemonActifButton" text="Pokemon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
+                    <Label text="Pokémon Actif de l'adversaire :" styleClass="text-18px"/>
+                    <Button fx:id="opponentPokemonActifButton" text="Pokémon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
                     <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
-                        <!-- Removed VBox.margin as parent VBox now handles spacing -->
+                        <!-- VBox.margin retiré car le VBox parent gère désormais l'espacement -->
                     </HBox>
                 </children>
             </VBox>
@@ -36,20 +36,20 @@
             <!-- Inner VBox for Bench Area -->
             <VBox spacing="5" alignment="TOP_LEFT">
                 <children>
-                    <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
+                    <Label text="Banc de l'adversaire :" styleClass="text-18px"/>
                     <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70">
-                        <!-- Removed VBox.margin as parent VBox now handles spacing -->
+                        <!-- VBox.margin retiré car le VBox parent gère désormais l'espacement -->
                     </HBox>
                 </children>
             </VBox>
         </children>
         <VBox.margin>
-            <Insets bottom="10.0" /> <!-- Add some margin below the new HBox -->
+            <Insets bottom="10.0" /> <!-- Ajout d'une marge sous la nouvelle HBox -->
         </VBox.margin>
     </HBox>
 
-    <Label text="Main de l'adversaire:" styleClass="text-18px"/>
-    <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT" minHeight="50"> <!-- Min height for card backs -->
+    <Label text="Main de l'adversaire :" styleClass="text-18px"/>
+    <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT" minHeight="50"> <!-- Hauteur min pour les dos de carte -->
         <VBox.margin>
             <Insets bottom="10.0" />
         </VBox.margin>
@@ -59,10 +59,10 @@
         <padding>
             <Insets top="5.0" />
         </padding>
-        <Label fx:id="mainAdversaireLabel" styleClass="text-18px" text="Main: X"/>
-        <Label fx:id="deckAdversaireLabel" styleClass="text-18px" text="Deck: Y"/>
-        <Label fx:id="defausseAdversaireLabel" styleClass="text-18px" text="Défausse: Z"/>
-        <Label fx:id="prixAdversaireLabel" styleClass="text-18px" text="Prix: P"/>
+        <Label fx:id="mainAdversaireLabel" styleClass="text-18px" text="Main Adv. : X"/>
+        <Label fx:id="deckAdversaireLabel" styleClass="text-18px" text="Pioche Adv. : Y"/>
+        <Label fx:id="defausseAdversaireLabel" styleClass="text-18px" text="Défausse Adv. : Z"/>
+        <Label fx:id="prixAdversaireLabel" styleClass="text-18px" text="Récomp. Adv. : P"/>
     </HBox>
 
 </fx:root>
