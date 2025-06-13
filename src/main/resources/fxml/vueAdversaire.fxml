@@ -23,7 +23,7 @@
     <HBox spacing="20" alignment="TOP_LEFT">
         <children>
             <!-- Inner VBox for Active Pokemon Area -->
-            <VBox spacing="5" alignment="TOP_LEFT">
+            <VBox fx:id="opponentPokemonActifVBox" spacing="5" alignment="TOP_LEFT">
                 <children>
                     <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
                     <Button fx:id="opponentPokemonActifButton" text="Pokemon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
