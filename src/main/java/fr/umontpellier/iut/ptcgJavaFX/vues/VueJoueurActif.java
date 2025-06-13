@@ -91,6 +91,7 @@ public class VueJoueurActif extends VBox {
     // private final Map<IPokemon, ChangeListener<CartePokemon>> benchPokemonCardListeners = new HashMap<>(); // RETIRÉ
     // private final Map<IPokemon, Button> benchPokemonButtons = new HashMap<>(); // RETIRÉ
 
+    private boolean isChoosingNewActivePokemon = false; // Added state variable
 
     @FXML
     Button passerButton;
@@ -129,6 +130,15 @@ public class VueJoueurActif extends VBox {
             });
             // Appel initial pour mise à jour au cas où une sélection existe déjà
             mettreAJourStyleSelectionPokemon(jeuConcret.carteSelectionneeProperty().get());
+        }
+
+        // Add listener for instruction changes
+        if (this.jeu != null && this.jeu.instructionProperty() != null) {
+            this.jeu.instructionProperty().addListener((obs, oldInstruction, newInstruction) -> {
+                handleInstructionChange(newInstruction);
+            });
+            // Process initial instruction
+            handleInstructionChange(this.jeu.instructionProperty().get());
         }
 
         // Initialize deck and prize card images
@@ -623,12 +633,15 @@ public class VueJoueurActif extends VBox {
         boutonPokemonBanc.setOnAction(event -> {
             if (this.jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
                 String idCarteCliquee = pokemon.getCartePokemon().getId();
-                this.jeu.carteSurTerrainCliquee(idCarteCliquee); // Appel existant pour la sélection visuelle
-
-                // AJOUT: Si une carte est en jeu et attend une cible, notifier ce choix.
-                IJoueur joueurCourant = VueJoueurActif.this.joueurActifProperty.get();
-                if (joueurCourant != null && joueurCourant.carteEnJeuProperty().get() != null) {
-                    this.jeu.uneCarteComplementaireAEteChoisie(idCarteCliquee);
+                if (isChoosingNewActivePokemon) {
+                    // As per correction request, call uneCarteDeLaMainAEteChoisie for promotion.
+                    this.jeu.uneCarteDeLaMainAEteChoisie(idCarteCliquee);
+                } else {
+                    this.jeu.carteSurTerrainCliquee(idCarteCliquee); // Original logic
+                    IJoueur joueurCourant = VueJoueurActif.this.joueurActifProperty.get();
+                    if (joueurCourant != null && joueurCourant.carteEnJeuProperty().get() != null) {
+                        this.jeu.uneCarteComplementaireAEteChoisie(idCarteCliquee);
+                    }
                 }
             } else {
                 System.err.println("Clic sur Pokémon de banc du joueur, mais pas de Pokémon/carte/ID trouvé.");
@@ -854,6 +867,39 @@ public class VueJoueurActif extends VBox {
                     nodePokemonBanc.getStyleClass().removeAll("pokemon-selectionne");
                 }
             }
+        }
+    }
+
+    private void handleInstructionChange(String newInstruction) {
+        isChoosingNewActivePokemon = "Choisissez un nouveau pokémon actif.".equals(newInstruction);
+        updateUserInteractivity();
+    }
+
+    private void updateUserInteractivity() {
+        boolean disableOthers = isChoosingNewActivePokemon;
+
+        if (panneauMainHBox != null) {
+            panneauMainHBox.setDisable(disableOthers);
+        }
+        if (pokemonActifButton != null) {
+            pokemonActifButton.setDisable(disableOthers);
+        }
+        if (attaquesPane != null) {
+            attaquesPane.setDisable(disableOthers);
+        }
+        if (passerButton != null) {
+            passerButton.setDisable(disableOthers);
+        }
+
+        // Optionally, highlight the bench or provide other cues
+        if (panneauBancHBox != null) {
+            if (isChoosingNewActivePokemon) {
+                panneauBancHBox.getStyleClass().add("banc-selection-active");
+            } else {
+                panneauBancHBox.getStyleClass().removeAll("banc-selection-active");
+            }
+            // Ensure bench buttons themselves are not disabled if they are the target
+            // This is implicitly handled as we only disable *other* areas.
         }
     }
 }
