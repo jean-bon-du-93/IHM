@@ -4,6 +4,7 @@ import fr.umontpellier.iut.ptcgJavaFX.ICarte;
 import fr.umontpellier.iut.ptcgJavaFX.IJeu;
 import fr.umontpellier.iut.ptcgJavaFX.IJoueur;
 import fr.umontpellier.iut.ptcgJavaFX.IPokemon;
+import javafx.beans.binding.Bindings; // Added import
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
