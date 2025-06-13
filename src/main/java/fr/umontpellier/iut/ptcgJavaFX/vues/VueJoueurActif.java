@@ -5,6 +5,7 @@ import fr.umontpellier.iut.ptcgJavaFX.IJeu;
 import fr.umontpellier.iut.ptcgJavaFX.IJoueur;
 import fr.umontpellier.iut.ptcgJavaFX.IPokemon;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.CartePokemon; // Ensure this is uncommented or present
+import javafx.beans.binding.Bindings; // Added import
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
