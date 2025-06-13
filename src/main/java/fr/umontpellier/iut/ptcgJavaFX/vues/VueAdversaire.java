@@ -282,11 +282,13 @@ public class VueAdversaire extends VBox {
                     hpLabel.setId("hpLabelOpponentActif"); // For future removal
                     hpLabel.getStyleClass().add("hp-label"); // Add style class
 
-                    // Bind HP text property to the pointsDeVieProperty of the current pkmnActif
+                    // Final variable for use in lambda expression
+                    final IPokemon opponentPokemonForBinding = pkmnActif;
+                    // Bind HP text property to the pointsDeVieProperty of the opponentPokemonForBinding
                     hpLabel.textProperty().bind(
                         Bindings.createStringBinding(
-                            () -> "HP: " + pkmnActif.pointsDeVieProperty().get(),
-                            pkmnActif.pointsDeVieProperty() // Dependency
+                            () -> "HP: " + opponentPokemonForBinding.pointsDeVieProperty().get(),
+                            opponentPokemonForBinding.pointsDeVieProperty() // Dependency
                         )
                     );
 

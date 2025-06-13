@@ -359,11 +359,13 @@ public class VueJoueurActif extends VBox {
                     Label hpLabel = new Label();
                     hpLabel.setId("hpLabelActif"); // For future removal
                     hpLabel.getStyleClass().add("hp-label"); // Add style class
-                    // Bind HP text property to the pointsDeVieProperty of the currentActivePokemon
+                    // Final variable for use in lambda expression
+                    final IPokemon pokemonForBinding = currentActivePokemon;
+                    // Bind HP text property to the pointsDeVieProperty of the pokemonForBinding
                     hpLabel.textProperty().bind(
                         Bindings.createStringBinding(
-                            () -> "HP: " + currentActivePokemon.pointsDeVieProperty().get(),
-                            currentActivePokemon.pointsDeVieProperty() // Dependency
+                            () -> "HP: " + pokemonForBinding.pointsDeVieProperty().get(),
+                            pokemonForBinding.pointsDeVieProperty() // Dependency
                         )
                     );
                     // Add HP label at index 1 (after button, before energy HBox)
