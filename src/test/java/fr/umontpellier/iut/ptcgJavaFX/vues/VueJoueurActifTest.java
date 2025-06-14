@@ -74,7 +74,7 @@ class VueJoueurActifTest {
 
         // Configure mock IJeu properties
         doReturn(joueurActifPropertyJeu).when(mockJeu).joueurActifProperty();
-        doReturn(carteSelectionneePropertyJeu).when(mockJeu).carteSelectionneeProperty();
+        // doReturn(carteSelectionneePropertyJeu).when(mockJeu).carteSelectionneeProperty(); // Temporarily commented out
 
 
         CountDownLatch latch = new CountDownLatch(1);
