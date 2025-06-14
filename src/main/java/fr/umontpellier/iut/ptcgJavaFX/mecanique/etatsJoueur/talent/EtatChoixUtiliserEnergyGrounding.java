@@ -18,7 +18,7 @@ public class EtatChoixUtiliserEnergyGrounding extends EtatJoueur {
         this.koPokemon = koPokemon;
         this.lanturnPokemon = lanturnPokemon;
         this.availableEnergies = availableEnergies;
-        String instruction = String.format("Lanturn's Energy Grounding: Move a basic energy from %s (KO) to Lanturn? (Oui/Non)", koPokemon.getNom());
+        String instruction = String.format("Lanturn's Energy Grounding: Move a basic energy from %s (KO) to Lanturn? (Oui/Non)", koPokemon.getCartePokemon().getNom());
         getJeu().instructionProperty().setValue(instruction);
         // The UI will need to offer Yes/No. Assume Yes calls talentAEteAccepte, No calls talentAEteRefuse.
     }
