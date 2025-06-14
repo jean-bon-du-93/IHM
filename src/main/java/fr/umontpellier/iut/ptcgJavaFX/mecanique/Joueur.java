@@ -118,6 +118,9 @@ public class Joueur implements IJoueur {
      */
     private int bonusDegats;
 
+    private Pokemon pokemonAllieKOAuTourPrecedent = null;
+    private int tourPokemonAllieKO = 0;
+
     public Joueur(String nom, List<Carte> deck) {
         this.nom = nom;
         // toutes les cartes du deck sont initialement placées dans la pioche
@@ -567,6 +570,22 @@ public class Joueur implements IJoueur {
         peutMelanger.setValue(false);
         peutAjouter.setValue(false);
 
+        // Check for Lanturn's Energy Grounding condition validity
+        if (pokemonAllieKOAuTourPrecedent != null && getJeu() != null) {
+            // If current turn is not the one immediately after the turn the KO happened, invalidate.
+            // Lanturn's owner is starting their turn. The KO must have happened on opponent's turn (tourPokemonAllieKO).
+            // So, currentTour must be tourPokemonAllieKO + 1.
+            if (getJeu().getCompteurTour() > tourPokemonAllieKO + 1) {
+                pokemonAllieKOAuTourPrecedent = null;
+                tourPokemonAllieKO = 0; // Reset tour number
+            }
+        } else if (pokemonAllieKOAuTourPrecedent != null && getJeu() == null) {
+            // If jeu is null here, we can't verify the tour. For safety, clear the KO'd Pokemon.
+            // This situation should ideally not occur in a properly initialized game.
+            pokemonAllieKOAuTourPrecedent = null;
+            tourPokemonAllieKO = 0;
+        }
+
         // initialisation du tour pour les pokémon en jeu
         for (Pokemon p : getListePokemonEnJeu()) {
             p.onDebutTour(this);
@@ -662,27 +681,44 @@ public class Joueur implements IJoueur {
      * Pour chaque pokémon KO, les cartes qui lui sont attachées sont défaussées et
      * le joueur adverse prend une carte récompense.
      */
-    public void defausserPokemonsKO(Joueur joueur) {
+    public void defausserPokemonsKO(Joueur joueurDefaussant) {
+        // Check if KOs are due to opponent's attack for Lanturn's ability tracking
+        boolean koParAttaqueAdverse = false;
+        if (getJeu() != null && getJeu().getJoueurActif() == joueurDefaussant.getAdversaire()) {
+            koParAttaqueAdverse = true;
+        }
+
         // retirer tous les pokémon de banc qui sont KO
-        for (int i = 0; i < joueur.banc.size(); i++) {
-            Pokemon pokemon = joueur.banc.get(i);
+        for (int i = 0; i < joueurDefaussant.banc.size(); i++) {
+            Pokemon pokemon = joueurDefaussant.banc.get(i);
             if (pokemon != null && pokemon.estKO()) {
-                joueur.onPokemonKO(pokemon);
-                for (Carte c : pokemon.getCartes()) {
-                    joueur.ajouterCarteDefausse(c);
+                if (koParAttaqueAdverse) {
+                    // This specific Pokemon was KO'd.
+                    // The owner of this KO'd pokemon is joueurDefaussant.
+                    joueurDefaussant.setPokemonAllieKOParAttaqueAdversaire(pokemon);
                 }
-                joueur.banc.set(i, null);
-                joueur.getAdversaire().prendreRecompense();
+                joueurDefaussant.onPokemonKO(pokemon); // Call general hook
+                for (Carte c : pokemon.getCartes()) {
+                    joueurDefaussant.ajouterCarteDefausse(c);
+                }
+                joueurDefaussant.banc.set(i, null);
+                joueurDefaussant.getAdversaire().prendreRecompense();
             }
         }
         // tester si le pokemon actif est KO
-        if (joueur.pokemonActif.getValue() != null && joueur.pokemonActif.getValue().estKO()) {
-            joueur.onPokemonKO(joueur.pokemonActif.getValue());
-            for (Carte c : joueur.pokemonActif.getValue().getCartes()) {
-                joueur.ajouterCarteDefausse(c);
+        Pokemon pokemonActifInitial = joueurDefaussant.pokemonActif.getValue(); // Store ref before nulling
+        if (pokemonActifInitial != null && pokemonActifInitial.estKO()) {
+            if (koParAttaqueAdverse) {
+                 // This specific Pokemon was KO'd.
+                 // The owner of this KO'd pokemon is joueurDefaussant.
+                joueurDefaussant.setPokemonAllieKOParAttaqueAdversaire(pokemonActifInitial);
             }
-            joueur.pokemonActif.setValue(null);
-            joueur.getAdversaire().prendreRecompense();
+            joueurDefaussant.onPokemonKO(pokemonActifInitial); // Call general hook
+            for (Carte c : pokemonActifInitial.getCartes()) {
+                joueurDefaussant.ajouterCarteDefausse(c);
+            }
+            joueurDefaussant.pokemonActif.setValue(null);
+            joueurDefaussant.getAdversaire().prendreRecompense();
         }
     }
 
@@ -937,4 +973,23 @@ public class Joueur implements IJoueur {
         return peutDefausserEnergie;
     }
 
+    public Pokemon getPokemonAllieKOAuTourPrecedent() {
+        return pokemonAllieKOAuTourPrecedent;
+    }
+
+    public int getTourPokemonAllieKO() {
+        return tourPokemonAllieKO;
+    }
+
+    public void setPokemonAllieKOParAttaqueAdversaire(Pokemon koPokemon) {
+        this.pokemonAllieKOAuTourPrecedent = koPokemon;
+        // Record the tour number when this KO happened (which was the opponent's turn)
+        if (getJeu() != null) { // Ensure jeu is available
+            this.tourPokemonAllieKO = getJeu().getCompteurTour();
+        } else {
+            // Fallback or error, though jeu should ideally always be set.
+            // For safety, could use a value that indicates an invalid tour if jeu is null.
+            this.tourPokemonAllieKO = -1; // Or handle error appropriately
+        }
+    }
 }
