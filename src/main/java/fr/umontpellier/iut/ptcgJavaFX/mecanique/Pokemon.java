@@ -248,8 +248,18 @@ public class Pokemon implements IPokemon {
      *         retraite
      */
     public boolean peutRetraite() {
+        if (estEndormi.get() || estParalyse.get()) {
+            return false;
+        }
         Map<Type, Integer> cout = new HashMap<>();
-        cout.put(Type.INCOLORE, getCartePokemon().getCoutRetraite(this));
+        // getCartePokemon() might be null if the Pokemon object is not fully initialized
+        // or in a weird state, though unlikely for an active Pokemon.
+        // Adding a null check for robustness.
+        CartePokemon cp = getCartePokemon();
+        if (cp == null) {
+            return false; // Cannot determine retreat cost
+        }
+        cout.put(Type.INCOLORE, cp.getCoutRetraite(this));
         return peutPayerCout(cout);
     }
 
@@ -327,7 +337,22 @@ public class Pokemon implements IPokemon {
      */
     public void onFinTour(Joueur joueur) {
         peutEvoluer = true;
-        getCartePokemon().onFinTour(joueur);
+        if (estParalyse.getValue()) {
+            estParalyse.setValue(false);
+            // Optionally, add a UI instruction/log that the Pokemon is no longer Paralyzed
+            // if (joueur.getJeu() != null && getCartePokemon() != null) {
+            //     joueur.getJeu().instructionProperty().setValue(getCartePokemon().getNom() + " n'est plus Paralysé.");
+            // }
+        }
+        // It's important that getCartePokemon().onFinTour(joueur) is called AFTER
+        // status conditions like Paralyzed are cleared, in case a card's own end-of-turn
+        // effect depends on its status or wants to re-apply a status.
+        // However, most built-in status conditions clear before card-specific end-of-turn text.
+        // If getCartePokemon() could be null (e.g. if a Pokemon object exists without a card), add a null check.
+        CartePokemon cp = getCartePokemon();
+        if (cp != null) {
+            cp.onFinTour(joueur); // For card-specific end-of-turn effects
+        }
     }
 
     /**
@@ -355,6 +380,29 @@ public class Pokemon implements IPokemon {
             ajouterDegats(20);
             if (joueur.lancerPiece()) {
                 estBrule.setValue(false);
+            }
+        }
+        if (estEmpoisonne.getValue()) {
+            // TODO: Maybe add a log or UI instruction that poison damage is being applied.
+            // joueur.getJeu().instructionProperty().setValue(getCartePokemon().getNom() + " subit 10 dégâts de Poison !");
+            ajouterDegats(10); // 1 damage counter for poison
+        }
+        if (estEndormi.getValue()) {
+            // It's important that the Joueur passed to controlePokemon is the owner of this Pokemon
+            // so that lancerPiece() attributes the action/randomness to the correct player context if needed.
+            // Also, Joueur needs access to Jeu to set instructionProperty. Let's assume Joueur has getJeu().
+            if (joueur.getJeu() != null) { // Check if Jeu instance is available
+                joueur.getJeu().instructionProperty().setValue(getCartePokemon().getNom() + " est Endormi. " + joueur.getNom() + " lance une pièce...");
+            }
+            if (joueur.lancerPiece()) { // True for heads
+                estEndormi.setValue(false);
+                if (joueur.getJeu() != null) {
+                    joueur.getJeu().instructionProperty().setValue(getCartePokemon().getNom() + " s'est réveillé !");
+                }
+            } else {
+                if (joueur.getJeu() != null) {
+                    joueur.getJeu().instructionProperty().setValue(getCartePokemon().getNom() + " reste Endormi.");
+                }
             }
         }
     }

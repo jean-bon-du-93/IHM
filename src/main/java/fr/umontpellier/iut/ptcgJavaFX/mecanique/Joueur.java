@@ -623,7 +623,8 @@ public class Joueur implements IJoueur {
     public List<Attaque> getAttaquesPossibles() {
         // le joueur ne peut pas attaquer si c'est le premier tour de jeu (uniquement le
         // premier joueur) ou s'il n'a pas de pokémon actif
-        if (jeu.getCompteurTour() != 1 && pokemonActif.getValue() != null) {
+        // ou si le pokemon actif est endormi ou paralysé
+        if (jeu.getCompteurTour() != 1 && pokemonActif.getValue() != null && !pokemonActif.getValue().estEndormiProperty().get() && !pokemonActif.getValue().estParalyseProperty().get()) {
             return pokemonActif.getValue().getAttaquesPossibles();
         }
         return new ArrayList<>();
@@ -786,9 +787,38 @@ public class Joueur implements IJoueur {
         return carteEnJeu.getValue().getChoixPossibles(this);
     }
 
-    public void attaquer(String attaque) {
+    public void attaquer(String attaqueName) {
+        Pokemon currentActivePokemon = getPokemonActif();
+        if (currentActivePokemon == null) {
+            // Should not happen if getAttaquesPossibles was checked by UI, but as a safeguard:
+            return;
+        }
+
+        if (currentActivePokemon.estConfusProperty().get()) {
+            if (getJeu() != null) {
+                getJeu().instructionProperty().setValue(currentActivePokemon.getCartePokemon().getNom() + " est Confus. " + getNom() + " lance une pièce pour l'attaque...");
+            }
+            if (!lancerPiece()) { // Tails - Pokemon hurts itself
+                if (getJeu() != null) {
+                    getJeu().instructionProperty().setValue("Pile ! " + currentActivePokemon.getCartePokemon().getNom() + " s'inflige 30 dégâts dans sa confusion ! L'attaque échoue.");
+                }
+                currentActivePokemon.ajouterDegats(30); // Add 30 damage to itself
+                // Transition to EnAttaque and immediately call finAttaque to process KOs and end attack phase.
+                // This ensures that if the Pokemon KOs itself, the game handles it correctly.
+                setEtatCourant(new EnAttaque(this));
+                getEtatCourant().finAttaque(); // Trigger KO checks etc.
+                return; // Attack does not proceed further
+            } else { // Heads - Attack normally
+                if (getJeu() != null) {
+                    getJeu().instructionProperty().setValue("Face ! L'attaque se déroule normalement.");
+                }
+                // Fall through to normal attack logic
+            }
+        }
+
+        // Normal attack logic (or if Confusion coin flip was Heads)
         setEtatCourant(new EnAttaque(this));
-        getPokemonActif().utiliserAttaque(attaque, this);
+        currentActivePokemon.utiliserAttaque(attaqueName, this);
     }
 
     public void finaliserAttaque(String numCarte) {

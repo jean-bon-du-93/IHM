@@ -23,6 +23,7 @@ public class TalentNidoqueen extends EtatJoueur {
                         .toList();
         if (!choixPossibles.isEmpty() && choixPossibles.contains(numCarte)) {
             joueur.deplacerCarteComplementaire(numCarte, new PiocheVersMain());
+            joueur.melangerPioche(); // Added this line
             joueur.viderListChoixComplementaires();
             joueur.setEtatCourant(new TourNormal(joueur));
         }
