@@ -84,6 +84,8 @@ public class VueJoueurActif extends VBox {
     private MapChangeListener<String, List<String>> energiePokemonActifListener; // For active Pokemon
     private ListChangeListener<ICarte> piocheListener; // Listener for player's deck
     private ListChangeListener<ICarte> recompensesListener; // Listener for player's prize cards
+    private javafx.beans.value.ChangeListener<Boolean> peutRetraiteListener;
+
 
     // Fields for benched Pokemon energy listeners
     private final Map<IPokemon, MapChangeListener<String, List<String>>> benchEnergyListeners = new HashMap<>();
@@ -314,10 +316,9 @@ public class VueJoueurActif extends VBox {
                 if (oldJoueur.recompensesProperty() != null && this.recompensesListener != null) {
                     oldJoueur.recompensesProperty().removeListener(this.recompensesListener);
                 }
-                // Unbind retreat button from old player - REMOVED as per instruction
-                // if (retreatButton != null) {
-                //     retreatButton.disableProperty().unbind();
-                // }
+                if (this.peutRetraiteListener != null && oldJoueur.peutRetraiteProperty() != null) {
+                    oldJoueur.peutRetraiteProperty().removeListener(this.peutRetraiteListener);
+                }
             }
 
             // Update displays for newJoueur
@@ -370,6 +371,12 @@ public class VueJoueurActif extends VBox {
                 //     retreatButton.disableProperty().unbind();
                 //     retreatButton.setDisable(true);
                 // }
+                if (newJoueur.peutRetraiteProperty() != null) {
+                    if (this.peutRetraiteListener == null) {
+                        this.peutRetraiteListener = (observableValue, oldValue, newValue) -> updateUserInteractivity();
+                    }
+                    newJoueur.peutRetraiteProperty().addListener(this.peutRetraiteListener);
+                }
 
             } else { // No new player (e.g. game end), clear displays
                 if (energiePokemonActifHBox != null) energiePokemonActifHBox.getChildren().clear();
