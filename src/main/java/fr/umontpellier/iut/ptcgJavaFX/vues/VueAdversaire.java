@@ -24,12 +24,13 @@ import javafx.event.ActionEvent; // Added import
 import javafx.scene.layout.HBox;
 // import javafx.scene.layout.Region; // For placeholders or card backs - ImageView will be used
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane; // Added for BorderPane
 
 import java.io.IOException;
 import java.util.List; // For energieProperty value type
 import java.util.Map; // For iterating energy map
 
-public class VueAdversaire extends VBox {
+public class VueAdversaire extends BorderPane { // Changed from VBox to BorderPane
     private static final int MAX_BENCH_SLOTS = 5; // Matching VueJoueurActif
 
     // Constants for image sizes
