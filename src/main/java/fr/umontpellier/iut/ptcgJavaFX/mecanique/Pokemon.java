@@ -88,7 +88,28 @@ public class Pokemon implements IPokemon {
         pointsDeVie.bind(Bindings.createIntegerBinding(() -> this.cartePokemon.getValue().getPointsVie() - degats.getValue(), this.cartePokemon, degats));
         attaques = FXCollections.observableArrayList();
         energie = FXCollections.observableHashMap();
-        miseAJourAttaquesEtEnergie();
+        miseAJourAttaquesEtEnergie(); // Sets up listener on cartes
+
+        // Add listener for cartePokemon changes (evolution)
+        this.cartePokemon.addListener((obs, oldCard, newCard) -> {
+            updateObservableAttackList();
+            // PointsDeVie is already bound to this.cartePokemon, so it updates automatically.
+            // Energy map is updated by the listener on 'cartes' when evolution card is added.
+        });
+        // Initial population of attacks, relying on the cartes.add in constructor triggering the listener.
+        // If that's not robust enough, an explicit call here might be needed,
+        // but the current logic with the modified listener should handle it.
+    }
+
+    private void updateObservableAttackList() {
+        if (this.cartePokemon == null || this.cartePokemon.getValue() == null) { // Guard against null cartePokemon
+            this.attaques.clear();
+            return;
+        }
+        List<String> nomsAttaquesPossibles = getAttaquesPossibles().stream()
+                .map(fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Attaque::getNom)
+                .collect(java.util.stream.Collectors.toList());
+        this.attaques.setAll(nomsAttaquesPossibles);
     }
 
     public CartePokemon getCartePokemon() {
@@ -347,13 +368,9 @@ public class Pokemon implements IPokemon {
         // Le champ 'energie' est déjà initialisé dans le constructeur comme FXCollections.observableHashMap()
 
         cartes.addListener((ListChangeListener.Change<? extends Carte> change) -> {
-            // Mettre à jour la liste des noms d'attaques possibles
-            List<String> nomsAttaquesPossibles = getAttaquesPossibles().stream()
-                    .map(Attaque::getNom)
-                    .toList();
-            this.attaques.setAll(nomsAttaquesPossibles); // Modifier la liste existante
+            updateObservableAttackList(); // Call the new method
 
-            // Mettre à jour la map d'énergies
+            // Keep the energy map update logic here
             Map<String, List<String>> cartesEnergie = cartes.stream()
                     .filter(c -> c.getTypeEnergie() != null)
                     .collect(Collectors.groupingBy(
