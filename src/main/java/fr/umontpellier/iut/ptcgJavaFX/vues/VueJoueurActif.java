@@ -92,7 +92,6 @@ public class VueJoueurActif extends VBox {
     // private final Map<IPokemon, Button> benchPokemonButtons = new HashMap<>(); // RETIRÉ
 
     private boolean isChoosingNewActivePokemon = false; // Added state variable
-    private boolean isSelectingEnergyToDiscard = false; // Added for energy discard state
 
     @FXML
     Button passerButton;
@@ -493,55 +492,33 @@ public class VueJoueurActif extends VBox {
     }
 
     private void populateActivePokemonEnergy(IPokemon activePokemon) {
-        if (energiePokemonActifHBox == null) return;
-        energiePokemonActifHBox.getChildren().clear();
-        if (activePokemon == null) return;
-
-        if (isSelectingEnergyToDiscard) {
-            ObservableList<? extends ICarte> attachedCards = activePokemon.cartesProperty();
-            // Iterate through all attached cards, filter for energy cards, and make them clickable
-            for (ICarte card : attachedCards) {
-                if (card.getTypeEnergie() != null) { // Check if it's an energy card
-                    Type energyType = card.getTypeEnergie();
-                    ImageView energyIcon = VueUtils.creerImageViewPourIconeEnergie(energyType, TAILLE_ICONE_ENERGIE);
-                    Button energyButton = new Button();
-                    energyButton.setGraphic(energyIcon);
-                    energyButton.getStyleClass().add("clickable-energy-icon"); // Add style class for individual energy
-                    // It's crucial that this ID is the unique ID of the *specific* energy card instance
-                    final String finalCardId = card.getId();
-                    energyButton.setOnAction(event -> {
-                        if (this.jeu != null) {
-                            this.jeu.uneCarteEnergieAEteChoisie(finalCardId);
-                        }
-                    });
-                    energiePokemonActifHBox.getChildren().add(energyButton);
-                }
-            }
-        } else {
-            // Original logic: Display aggregated energy counts
-            ObservableMap<String, List<String>> energieMap = activePokemon.energieProperty(); // This map groups by type letter, values are lists of IDs
-            if (energieMap != null) {
-                for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                    String typeLetter = entry.getKey();
-                    int count = entry.getValue().size(); // Get count of energies of this type
-                    if (count > 0) {
-                        Type typeEnum = null;
-                        for (Type t : Type.values()) {
-                            if (t.asLetter().equals(typeLetter)) {
-                                typeEnum = t;
-                                break;
+        if (energiePokemonActifHBox != null) {
+            energiePokemonActifHBox.getChildren().clear();
+            if (activePokemon != null) {
+                ObservableMap<String, List<String>> energieMap = activePokemon.energieProperty();
+                if (energieMap != null) {
+                    for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
+                        String typeLetter = entry.getKey();
+                        int count = entry.getValue().size();
+                        if (count > 0) {
+                            Type typeEnum = null;
+                            for (Type t : Type.values()) {
+                                if (t.asLetter().equals(typeLetter)) {
+                                    typeEnum = t;
+                                    break;
+                                }
                             }
-                        }
-                        if (typeEnum != null) {
-                            ImageView iconeEnergie = VueUtils.creerImageViewPourIconeEnergie(typeEnum, TAILLE_ICONE_ENERGIE);
-                            Label countLabel = new Label("x" + count);
-                            HBox energyEntryBox = new HBox(iconeEnergie, countLabel);
-                            energyEntryBox.setSpacing(2);
-                            energiePokemonActifHBox.getChildren().add(energyEntryBox);
-                        } else {
-                            Label energyLabel = new Label(typeLetter + " x" + count);
-                            energyLabel.getStyleClass().add("energy-tag");
-                            energiePokemonActifHBox.getChildren().add(energyLabel);
+                            if (typeEnum != null) {
+                                ImageView iconeEnergie = VueUtils.creerImageViewPourIconeEnergie(typeEnum, TAILLE_ICONE_ENERGIE);
+                                Label countLabel = new Label("x" + count);
+                                HBox energyEntryBox = new HBox(iconeEnergie, countLabel);
+                                energyEntryBox.setSpacing(2);
+                                energiePokemonActifHBox.getChildren().add(energyEntryBox);
+                            } else { // Fallback if type letter not found (should not happen)
+                                Label energyLabel = new Label(typeLetter + " x" + count);
+                                energyLabel.getStyleClass().add("energy-tag");
+                                energiePokemonActifHBox.getChildren().add(energyLabel);
+                            }
                         }
                     }
                 }
@@ -895,60 +872,34 @@ public class VueJoueurActif extends VBox {
 
     private void handleInstructionChange(String newInstruction) {
         isChoosingNewActivePokemon = "Choisissez un nouveau pokémon actif.".equals(newInstruction);
-        isSelectingEnergyToDiscard = "Défaussez une énergie de ce pokémon.".equals(newInstruction);
-
-        // Refresh active Pokemon display if needed (e.g., to change energy display mode)
-        // Check if joueurActifProperty and its chained properties are not null before calling get()
-        IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
-        IPokemon currentActivePkmn = (joueurCourant != null && joueurCourant.pokemonActifProperty() != null) ? joueurCourant.pokemonActifProperty().get() : null;
-
-        if (currentActivePkmn != null && (isSelectingEnergyToDiscard || (!isChoosingNewActivePokemon && !isSelectingEnergyToDiscard))) {
-             // Refresh to show individual energies or to restore aggregated view when leaving the state.
-            placerPokemonActif();
-        }
         updateUserInteractivity();
     }
 
     private void updateUserInteractivity() {
-        boolean disableNonEssentialForChoosingNewActive = isChoosingNewActivePokemon;
-        boolean disableNonEssentialForDiscardingEnergy = isSelectingEnergyToDiscard;
-
-        // General principle: if any special state is active, disable most things,
-        // then selectively re-enable what's needed for that state.
-        boolean overallDisable = disableNonEssentialForChoosingNewActive || disableNonEssentialForDiscardingEnergy;
+        boolean disableOthers = isChoosingNewActivePokemon;
 
         if (panneauMainHBox != null) {
-            panneauMainHBox.setDisable(overallDisable);
+            panneauMainHBox.setDisable(disableOthers);
         }
         if (pokemonActifButton != null) {
-            // Disable active pokemon button if choosing new one OR discarding energy (interaction is with energy icons)
-            pokemonActifButton.setDisable(overallDisable);
+            pokemonActifButton.setDisable(disableOthers);
         }
         if (attaquesPane != null) {
-            attaquesPane.setDisable(overallDisable);
+            attaquesPane.setDisable(disableOthers);
         }
         if (passerButton != null) {
-            passerButton.setDisable(overallDisable);
+            passerButton.setDisable(disableOthers);
         }
+
+        // Optionally, highlight the bench or provide other cues
         if (panneauBancHBox != null) {
-            // Disable bench interaction if discarding energy from active, enable if choosing new active.
-            // If choosing new active, bench should be interactive, so don't disable based on overallDisable.
-            // If discarding energy, bench should be disabled.
-            panneauBancHBox.setDisable(disableNonEssentialForDiscardingEnergy);
             if (isChoosingNewActivePokemon) {
                 panneauBancHBox.getStyleClass().add("banc-selection-active");
             } else {
                 panneauBancHBox.getStyleClass().removeAll("banc-selection-active");
             }
-        }
-
-        // Highlight energy area when selecting energy to discard
-        if (energiePokemonActifHBox != null) {
-            if (isSelectingEnergyToDiscard) {
-                energiePokemonActifHBox.getStyleClass().add("energy-selection-active"); // Add new style
-            } else {
-                energiePokemonActifHBox.getStyleClass().removeAll("energy-selection-active");
-            }
+            // Ensure bench buttons themselves are not disabled if they are the target
+            // This is implicitly handled as we only disable *other* areas.
         }
     }
 }

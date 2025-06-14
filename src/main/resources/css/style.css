@@ -221,15 +221,3 @@
     -fx-border-width: 2px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,255,0.5), 10, 0.5, 0, 0);
 }
-
-.energy-selection-active {
-    -fx-effect: dropshadow(gaussian, rgba(255,215,0,0.7), 15, 0.6, 0, 0); /* Gold glow effect */
-    -fx-padding: 3px;
-    -fx-border-color: gold;
-    -fx-border-width: 1px;
-}
-
-.clickable-energy-icon {
-    -fx-background-color: transparent; /* Make button background transparent */
-    -fx-padding: 1px; /* Minimal padding */
-}
