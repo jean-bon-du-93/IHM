@@ -17,15 +17,14 @@ public class SuiteChoixCommunicationPokemon extends CarteEnJeu {
     public void carteChoisie(String numCarte) {
         List<String> choixPossibles = joueur.getChoixComplementaires().stream().map(Carte::getId).toList();
         if (!choixPossibles.isEmpty() && choixPossibles.contains(numCarte)) {
+            Carte carteReveleeDuDeck = Carte.get(numCarte); // Get the card object
             joueur.deplacerCarteComplementaire(numCarte, new PiocheVersMain());
-            // It's important to clear choixComplementaires *before* shuffling if it contained references to pioche.
-            // However, deplacerCarteComplementaire already removes the card from choixComplementaires.
-            // If viderListChoixComplementaires() is meant to clear the list that was populated from the deck,
-            // it should be called before shuffling.
-            // For safety, let's assume viderListChoixComplementaires clears the temporary list of choices.
-            joueur.viderListChoixComplementaires(); // Clear the list of choices from deck
-            joueur.melangerPioche(); // Added this line
-            onFinAction(); // Proceeds to TourNormal
+            if (carteReveleeDuDeck != null && joueur.getJeu() != null) { // Add null checks
+                joueur.getJeu().logRevealCard(joueur, carteReveleeDuDeck, "Searched from deck with Pokémon Communication");
+            }
+            joueur.viderListChoixComplementaires();
+            joueur.melangerPioche();
+            onFinAction();
         }
     }
 

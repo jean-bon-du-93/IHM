@@ -17,7 +17,7 @@ public class EnJeuRecyclageDEnergie extends CarteEnJeu {
         if (joueur.getChoixComplementaires().isEmpty()) { // dans le cas où on rechoisit l'option
             joueur.setPeutAjouter(false);
             List<Carte> cartesEnergieDeDefausse = joueur.getCartesDefausse().stream()
-                    .filter(c -> c.getTypeEnergie() != null)
+                    .filter(Carte::isBasicEnergy) // Changed this line
                     .toList();
             if (!cartesEnergieDeDefausse.isEmpty()) {
                 joueur.setListChoixComplementaires(cartesEnergieDeDefausse);
@@ -33,7 +33,7 @@ public class EnJeuRecyclageDEnergie extends CarteEnJeu {
         if (joueur.getChoixComplementaires().isEmpty()) { // dans le cas où on rechoisit l'option
             joueur.setPeutMelanger(false);
             List<Carte> cartesEnergieDeDefausse = joueur.getCartesDefausse().stream()
-                    .filter(c -> c.getTypeEnergie() != null)
+                    .filter(Carte::isBasicEnergy) // Changed this line
                     .toList();
             if (!cartesEnergieDeDefausse.isEmpty()) {
                 joueur.setListChoixComplementaires(cartesEnergieDeDefausse);

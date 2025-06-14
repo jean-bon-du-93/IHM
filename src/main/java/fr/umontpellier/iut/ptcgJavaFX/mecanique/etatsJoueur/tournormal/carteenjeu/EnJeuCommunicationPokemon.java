@@ -20,6 +20,11 @@ public class EnJeuCommunicationPokemon extends CarteEnJeu {
                 .map(Carte::getId)
                 .toList();
         if (!choixPossibles.isEmpty() && choixPossibles.contains(numCarte)) {
+            Carte carteARevelerEtRetourner = Carte.get(numCarte); // Get the card object
+            if (carteARevelerEtRetourner != null && joueur.getJeu() != null) { // Add null checks
+                joueur.getJeu().logRevealCard(joueur, carteARevelerEtRetourner, "Returned to deck with Pokémon Communication");
+            }
+
             List<Carte> pokemonsDeLaPioche = joueur.getCartesPioche().stream()
                     .filter(c -> c.getTypePokemon() != null)
                     .toList();

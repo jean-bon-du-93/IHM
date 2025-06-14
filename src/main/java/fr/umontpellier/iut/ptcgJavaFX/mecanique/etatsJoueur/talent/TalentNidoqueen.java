@@ -22,8 +22,12 @@ public class TalentNidoqueen extends EtatJoueur {
                         .map(Carte::getId)
                         .toList();
         if (!choixPossibles.isEmpty() && choixPossibles.contains(numCarte)) {
+            Carte carteRevelee = Carte.get(numCarte); // Get the card object before moving
             joueur.deplacerCarteComplementaire(numCarte, new PiocheVersMain());
-            joueur.melangerPioche(); // Added this line
+            if (carteRevelee != null && joueur.getJeu() != null) { // Add null checks for safety
+                joueur.getJeu().logRevealCard(joueur, carteRevelee, "Searched from deck with Nidoqueen's Talent");
+            }
+            joueur.melangerPioche();
             joueur.viderListChoixComplementaires();
             joueur.setEtatCourant(new TourNormal(joueur));
         }
