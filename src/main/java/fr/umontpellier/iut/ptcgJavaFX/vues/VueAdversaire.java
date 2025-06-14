@@ -30,21 +30,21 @@ import java.util.List; // For energieProperty value type
 import java.util.Map; // For iterating energy map
 
 public class VueAdversaire extends VBox {
-    private static final int MAX_BENCH_SLOTS = 5; // Matching VueJoueurActif
+    private static final int MAX_EMPLACEMENTS_BANC_ADVERSAIRE = 5; // Matching VueJoueurActif
 
     // Constants for image sizes
-    private static final double LARGEUR_PKMN_ACTIF_ADV = 150;
-    private static final double HAUTEUR_PKMN_ACTIF_ADV = 225;
-    private static final double LARGEUR_PKMN_BANC_ADV = 100;
-    private static final double HAUTEUR_PKMN_BANC_ADV = 140;
-    private static final double LARGEUR_CARTE_MAIN_ADV = 150;
-    private static final double HAUTEUR_CARTE_MAIN_ADV = 225;
-    private static final double TAILLE_ICONE_ENERGIE_ADV = 18;
-    private static final double LARGEUR_DOS_PETIT = 30;
-    private static final double HAUTEUR_DOS_PETIT = 42;
+    private static final double LARGEUR_POKEMON_ACTIF_ADVERSAIRE = 150;
+    private static final double HAUTEUR_POKEMON_ACTIF_ADVERSAIRE = 225;
+    private static final double LARGEUR_POKEMON_BANC_ADVERSAIRE = 100;
+    private static final double HAUTEUR_POKEMON_BANC_ADVERSAIRE = 140;
+    private static final double LARGEUR_CARTE_MAIN_ADVERSAIRE = 150;
+    private static final double HAUTEUR_CARTE_MAIN_ADVERSAIRE = 225;
+    private static final double TAILLE_ICONE_ENERGIE_ADVERSAIRE = 18;
+    private static final double LARGEUR_DOS_CARTE_PETIT = 30;
+    private static final double HAUTEUR_DOS_CARTE_PETIT = 42;
 
-    private IJeu jeu;
-    private IJoueur adversaire;
+    private IJeu jeuEnCours;
+    private IJoueur joueurAdverse;
 
     @FXML Label nomAdversaireLabel;
     @FXML Button opponentPokemonActifButton; // Changed from Label to Button and renamed
@@ -61,15 +61,15 @@ public class VueAdversaire extends VBox {
     @FXML ImageView prixAdversaireImageView; // Added FXML field
 
     // Listeners to update UI when properties of 'adversaire' change
-    private ChangeListener<IPokemon> pokemonActifListener;
-    private ListChangeListener<IPokemon> bancListener;
+    private ChangeListener<IPokemon> observateurPokemonActifAdv;
+    private ListChangeListener<IPokemon> observateurBancAdv;
     // private ListChangeListener<ICarte> mainListener; // Replaced by cardCountChangeListener
     // private ListChangeListener<ICarte> deckListener; // Replaced by cardCountChangeListener
     // private ListChangeListener<ICarte> defausseListener; // Replaced by cardCountChangeListener
     // private ListChangeListener<ICarte> prixListener; // Replaced by cardCountChangeListener
-    private ListChangeListener<ICarte> cardCountChangeListener; // For main, deck, discard, prizes
-    private MapChangeListener<String, List<String>> energiePokemonActifAdversaireListener; // Added field
-    private IPokemon opponentActivePokemonForEnergyListener = null; // To keep track of the Pokemon whose energy is being listened to
+    private ListChangeListener<ICarte> observateurComptesCartes; // For main, deck, discard, prizes
+    private MapChangeListener<String, List<String>> observateurEnergiePokemonActifAdv; // Added field
+    private IPokemon pokemonActifAdvPourObservateurEnergie = null; // To keep track of the Pokemon whose energy is being listened to
 
 
     public VueAdversaire() {
@@ -84,22 +84,22 @@ public class VueAdversaire extends VBox {
     }
 
     public void setJeu(IJeu jeu) {
-        this.jeu = jeu;
+        this.jeuEnCours = jeu;
         // If VueAdversaire needs to react to game-wide changes that affect the opponent,
         // bindings to 'jeu' would be set up here.
     }
 
     public void setAdversaire(IJoueur adversaire) {
-        if (this.adversaire != null) {
+        if (this.joueurAdverse != null) {
             // Remove old listeners if switching opponent
-            clearBindingsAndListeners();
+            nettoyerLiaisonsEtObservateursAdversaire();
         }
-        this.adversaire = adversaire;
-        initialiserAffichage();
+        this.joueurAdverse = adversaire;
+        initialiserAffichageAdversaire();
     }
 
-    private void initialiserAffichage() {
-        if (adversaire == null) {
+    private void initialiserAffichageAdversaire() {
+        if (joueurAdverse == null) {
             nomAdversaireLabel.setText("Adversaire non défini"); // Texte déjà en français
             if (opponentPokemonActifButton != null) opponentPokemonActifButton.setText("N/D"); // "Non Défini" ou "Non Disponible"
             if (energiePokemonActifAdversaireHBox != null) energiePokemonActifAdversaireHBox.getChildren().clear();
@@ -115,35 +115,35 @@ public class VueAdversaire extends VBox {
         }
 
         // Initialiser l'observateur partagé pour les comptes de cartes
-        this.cardCountChangeListener = c -> {
+        this.observateurComptesCartes = c -> {
             mettreAJourComptesCartesAdversaire(); // Met à jour les étiquettes de compte
             placerMainAdversaire(); // Met à jour l'affichage visuel de la main
         };
 
         // Configuration initiale de l'UI
-        if (nomAdversaireLabel != null) nomAdversaireLabel.setText(adversaire.getNom());
+        if (nomAdversaireLabel != null) nomAdversaireLabel.setText(joueurAdverse.getNom());
 
         // L'ancien gestionnaire setOnMouseClicked pour pokemonActifAdversaireDisplay a été retiré d'ici.
         // Le nouveau Bouton utilisera onAction spécifié dans FXML.
 
         // Configurer les images pour les dos de pioche et cartes récompense
         if (deckAdversaireImageView != null) {
-            deckAdversaireImageView.setImage(VueUtils.creerVueImagePourDosCarte(LARGEUR_DOS_PETIT, HAUTEUR_DOS_PETIT).getImage());
+            deckAdversaireImageView.setImage(VueUtils.creerVueImagePourDosCarte(LARGEUR_DOS_CARTE_PETIT, HAUTEUR_DOS_CARTE_PETIT).getImage());
         }
         if (prixAdversaireImageView != null) {
-            prixAdversaireImageView.setImage(VueUtils.creerVueImagePourDosCarte(LARGEUR_DOS_PETIT, HAUTEUR_DOS_PETIT).getImage());
+            prixAdversaireImageView.setImage(VueUtils.creerVueImagePourDosCarte(LARGEUR_DOS_CARTE_PETIT, HAUTEUR_DOS_CARTE_PETIT).getImage());
         }
 
-        placerPokemonActifAdversaire();
-        placerBancAdversaire();
-        placerMainAdversaire(); // Placement initial de la représentation de la main
-        mettreAJourComptesCartesAdversaire(); // Mise à jour initiale des comptes et de la visibilité des images
+        afficherPokemonActifAdversaire();
+        afficherBancAdversaire();
+        afficherMainAdversaire(); // Placement initial de la représentation de la main
+        actualiserCompteursCartesAdversaire(); // Mise à jour initiale des comptes et de la visibilité des images
 
         // Configurer les observateurs
-        configurerObservateurs(); // Renamed setupListeners
+        configurerObservateursAdversaire(); // Renamed setupListeners
 
-        if (this.jeu != null && this.jeu instanceof fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) {
-            fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu jeuConcret = (fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) this.jeu;
+        if (this.jeuEnCours != null && this.jeuEnCours instanceof fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) {
+            fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu jeuConcret = (fr.umontpellier.iut.ptcgJavaFX.mecanique.Jeu) this.jeuEnCours;
             // Pour éviter d'ajouter plusieurs observateurs si initialiserAffichage est appelé plusieurs fois avec le même jeu,
             // il serait mieux de passer l'observateur à nettoyerLiaisonsEtObservateurs pour le retirer.
             // Pour l'instant, on va simplement l'ajouter.
@@ -151,51 +151,51 @@ public class VueAdversaire extends VBox {
             // Ou, vérifier si un observateur est déjà attaché avant d'en ajouter un.
             // Par souci de simplicité pour cette tâche, simple ajout :
             jeuConcret.carteSelectionneeProperty().addListener((obs, ancienneSelection, nouvelleSelection) -> { // Renamed
-                mettreAJourStyleSelectionPokemonAdversaire(nouvelleSelection);
+                actualiserStyleSelectionPokemonAdversaire(nouvelleSelection);
             });
-            mettreAJourStyleSelectionPokemonAdversaire(jeuConcret.carteSelectionneeProperty().get());
+            actualiserStyleSelectionPokemonAdversaire(jeuConcret.carteSelectionneeProperty().get());
         }
     }
 
-    private void configurerObservateurs() { // Renamed setupListeners
-        if (this.adversaire == null) return; // Renforcement anti-NPE
+    private void configurerObservateursAdversaire() { // Renamed setupListeners
+        if (this.joueurAdverse == null) return; // Renforcement anti-NPE
 
         // Définir l'observateur pour les changements d'énergie sur le Pokémon actif
-        this.energiePokemonActifAdversaireListener = changement -> { // Renamed change
-            rafraichirEnergiePokemonActifAdversaire();
+        this.observateurEnergiePokemonActifAdv = changement -> { // Renamed change
+            mettreAJourEnergiesPokemonActifAdversaire();
         };
 
         // Observateur pour les changements de Pokémon actif
-        ObjectProperty<? extends IPokemon> propPokemonActif = adversaire.pokemonActifProperty(); // Renamed
+        ObjectProperty<? extends IPokemon> propPokemonActif = joueurAdverse.pokemonActifProperty(); // Renamed
         if (propPokemonActif != null) {
-            pokemonActifListener = (obs, ancienneValeur, nouvelleValeur) -> { // Renamed
+            observateurPokemonActifAdv = (obs, ancienneValeur, nouvelleValeur) -> { // Renamed
                 // Détacher l'observateur de l'énergie de l'ancien Pokémon actif
                 if (ancienneValeur != null && ancienneValeur.energieProperty() != null) {
-                    ancienneValeur.energieProperty().removeListener(this.energiePokemonActifAdversaireListener);
+                    ancienneValeur.energieProperty().removeListener(this.observateurEnergiePokemonActifAdv);
                 }
-                opponentActivePokemonForEnergyListener = nouvelleValeur; // Mettre à jour le Pokémon suivi
+                pokemonActifAdvPourObservateurEnergie = nouvelleValeur; // Mettre à jour le Pokémon suivi
 
-                placerPokemonActifAdversaire(); // Ceci appellera aussi rafraichirEnergiePokemonActifAdversaire
+                afficherPokemonActifAdversaire(); // Ceci appellera aussi mettreAJourEnergiesPokemonActifAdversaire
 
                 // Attacher l'observateur à l'énergie du nouveau Pokémon actif
                 if (nouvelleValeur != null && nouvelleValeur.energieProperty() != null) {
-                    nouvelleValeur.energieProperty().addListener(this.energiePokemonActifAdversaireListener);
+                    nouvelleValeur.energieProperty().addListener(this.observateurEnergiePokemonActifAdv);
                 }
             };
-            propPokemonActif.addListener(pokemonActifListener);
+            propPokemonActif.addListener(observateurPokemonActifAdv);
             // Attachement initial à l'énergie du Pokémon actif actuel (s'il existe)
             IPokemon pokemonActifActuel = propPokemonActif.get(); // Renamed
             if (pokemonActifActuel != null && pokemonActifActuel.energieProperty() != null) {
-                pokemonActifActuel.energieProperty().addListener(this.energiePokemonActifAdversaireListener);
-                opponentActivePokemonForEnergyListener = pokemonActifActuel;
+                pokemonActifActuel.energieProperty().addListener(this.observateurEnergiePokemonActifAdv);
+                pokemonActifAdvPourObservateurEnergie = pokemonActifActuel;
             }
         }
 
         // Observateur pour le banc
-        ObservableList<? extends IPokemon> listeBanc = adversaire.getBanc(); // Renamed
+        ObservableList<? extends IPokemon> listeBanc = joueurAdverse.getBanc(); // Renamed
         if (listeBanc != null) {
-            bancListener = changement -> placerBancAdversaire(); // Renamed
-            listeBanc.addListener(bancListener);
+            observateurBancAdv = changement -> placerBancAdversaire(); // Renamed
+            listeBanc.addListener(observateurBancAdv);
         }
 
         // Observateurs pour les comptes de cartes utilisant l'observateur partagé
@@ -205,64 +205,64 @@ public class VueAdversaire extends VBox {
         // Si c'est juste getMain() retournant ObservableList, c'est aussi bien.
         // La tâche implique que des méthodes de propriété existent pour celles-ci.
         // Correction de main pour utiliser getMain() selon les nouvelles instructions
-        ObservableList<? extends ICarte> listeMain = adversaire.getMain(); // Renamed
+        ObservableList<? extends ICarte> listeMain = joueurAdverse.getMain(); // Renamed
         if (listeMain != null) {
-            listeMain.addListener(this.cardCountChangeListener);
+            listeMain.addListener(this.observateurComptesCartes);
         }
-        if (adversaire.piocheProperty() != null) {
-            adversaire.piocheProperty().addListener(this.cardCountChangeListener);
+        if (joueurAdverse.piocheProperty() != null) {
+            joueurAdverse.piocheProperty().addListener(this.observateurComptesCartes);
         }
-        if (adversaire.defausseProperty() != null) {
-            adversaire.defausseProperty().addListener(this.cardCountChangeListener);
+        if (joueurAdverse.defausseProperty() != null) {
+            joueurAdverse.defausseProperty().addListener(this.observateurComptesCartes);
         }
-        if (adversaire.recompensesProperty() != null) {
-            adversaire.recompensesProperty().addListener(this.cardCountChangeListener);
+        if (joueurAdverse.recompensesProperty() != null) {
+            joueurAdverse.recompensesProperty().addListener(this.observateurComptesCartes);
         }
     }
 
-    private void nettoyerLiaisonsEtObservateurs() { // Renamed clearBindingsAndListeners
-        if (adversaire == null) return;
+    private void nettoyerLiaisonsEtObservateursAdversaire() { // Renamed clearBindingsAndListeners
+        if (joueurAdverse == null) return;
 
-        ObjectProperty<? extends IPokemon> propPokemonActif = adversaire.pokemonActifProperty(); // Renamed
-        if (propPokemonActif != null && pokemonActifListener != null) {
-            propPokemonActif.removeListener(pokemonActifListener);
+        ObjectProperty<? extends IPokemon> propPokemonActif = joueurAdverse.pokemonActifProperty(); // Renamed
+        if (propPokemonActif != null && observateurPokemonActifAdv != null) {
+            propPokemonActif.removeListener(observateurPokemonActifAdv);
         }
         // Détacher l'observateur d'énergie du dernier Pokémon actif connu
-        if (opponentActivePokemonForEnergyListener != null && opponentActivePokemonForEnergyListener.energieProperty() != null && energiePokemonActifAdversaireListener != null) {
-            opponentActivePokemonForEnergyListener.energieProperty().removeListener(energiePokemonActifAdversaireListener);
+        if (pokemonActifAdvPourObservateurEnergie != null && pokemonActifAdvPourObservateurEnergie.energieProperty() != null && observateurEnergiePokemonActifAdv != null) {
+            pokemonActifAdvPourObservateurEnergie.energieProperty().removeListener(observateurEnergiePokemonActifAdv);
         }
-        opponentActivePokemonForEnergyListener = null;
+        pokemonActifAdvPourObservateurEnergie = null;
 
 
-        ObservableList<? extends IPokemon> listeBanc = adversaire.getBanc(); // Renamed
-        if (listeBanc != null && bancListener != null) {
-            listeBanc.removeListener(bancListener);
+        ObservableList<? extends IPokemon> listeBanc = joueurAdverse.getBanc(); // Renamed
+        if (listeBanc != null && observateurBancAdv != null) {
+            listeBanc.removeListener(observateurBancAdv);
         }
 
         // Retirer l'observateur de compte de cartes partagé
-        if (this.cardCountChangeListener != null) {
+        if (this.observateurComptesCartes != null) {
             // Correction de main pour utiliser getMain()
-            ObservableList<? extends ICarte> listeMain = adversaire.getMain(); // Renamed
+            ObservableList<? extends ICarte> listeMain = joueurAdverse.getMain(); // Renamed
             if (listeMain != null) {
-                listeMain.removeListener(this.cardCountChangeListener);
+                listeMain.removeListener(this.observateurComptesCartes);
             }
-            if (adversaire.piocheProperty() != null) {
-                adversaire.piocheProperty().removeListener(this.cardCountChangeListener);
+            if (joueurAdverse.piocheProperty() != null) {
+                joueurAdverse.piocheProperty().removeListener(this.observateurComptesCartes);
             }
-            if (adversaire.defausseProperty() != null) {
-                adversaire.defausseProperty().removeListener(this.cardCountChangeListener);
+            if (joueurAdverse.defausseProperty() != null) {
+                joueurAdverse.defausseProperty().removeListener(this.observateurComptesCartes);
             }
-            if (adversaire.recompensesProperty() != null) {
-                adversaire.recompensesProperty().removeListener(this.cardCountChangeListener);
+            if (joueurAdverse.recompensesProperty() != null) {
+                joueurAdverse.recompensesProperty().removeListener(this.observateurComptesCartes);
             }
         }
     }
 
 
-    private void placerPokemonActifAdversaire() {
+    private void afficherPokemonActifAdversaire() {
         IPokemon pokemonActifAdv = null; // Renamed pkmnActif
-        if (adversaire != null && adversaire.pokemonActifProperty() != null) {
-            pokemonActifAdv = adversaire.pokemonActifProperty().get();
+        if (joueurAdverse != null && joueurAdverse.pokemonActifProperty() != null) {
+            pokemonActifAdv = joueurAdverse.pokemonActifProperty().get();
         }
 
         // Enlever les étiquettes existantes si présentes
@@ -276,7 +276,7 @@ public class VueAdversaire extends VBox {
 
         if (opponentPokemonActifButton != null) { // Ce bouton est dans opponentPokemonActifVBox
             if (pokemonActifAdv != null && pokemonActifAdv.getCartePokemon() != null) {
-                ImageView vueImage = VueUtils.creerVueImagePourCarte(pokemonActifAdv.getCartePokemon(), LARGEUR_PKMN_ACTIF_ADV, HAUTEUR_PKMN_ACTIF_ADV); // Renamed
+                ImageView vueImage = VueUtils.creerVueImagePourCarte(pokemonActifAdv.getCartePokemon(), LARGEUR_POKEMON_ACTIF_ADVERSAIRE, HAUTEUR_POKEMON_ACTIF_ADVERSAIRE); // Renamed
                 opponentPokemonActifButton.setGraphic(vueImage);
                 opponentPokemonActifButton.setText(null); // Enlever le texte
 
@@ -385,7 +385,7 @@ public class VueAdversaire extends VBox {
                 }
             } else {
                 // Afficher le dos de carte ou effacer
-                opponentPokemonActifButton.setGraphic(VueUtils.creerVueImagePourDosCarte(LARGEUR_PKMN_ACTIF_ADV, HAUTEUR_PKMN_ACTIF_ADV));
+                opponentPokemonActifButton.setGraphic(VueUtils.creerVueImagePourDosCarte(LARGEUR_POKEMON_ACTIF_ADVERSAIRE, HAUTEUR_POKEMON_ACTIF_ADVERSAIRE));
                 opponentPokemonActifButton.setText(null);
                 // S'assurer que l'étiquette PV est aussi effacée si pas de Pokémon actif
                 if (opponentPokemonActifVBox != null) {
@@ -393,45 +393,54 @@ public class VueAdversaire extends VBox {
                 }
             }
         }
-        rafraichirEnergiePokemonActifAdversaire();
+        mettreAJourEnergiesPokemonActifAdversaire();
     }
 
-    private void rafraichirEnergiePokemonActifAdversaire() {
-        if (energiePokemonActifAdversaireHBox == null) return;
-        energiePokemonActifAdversaireHBox.getChildren().clear();
-        IPokemon pokemonActifAdv = (this.adversaire != null && this.adversaire.pokemonActifProperty() != null) ? this.adversaire.pokemonActifProperty().get() : null; // Renamed
-        if (pokemonActifAdv != null) {
-            ObservableMap<String, List<String>> carteEnergies = pokemonActifAdv.energieProperty(); // Renamed
-            if (carteEnergies != null) {
-                for (Map.Entry<String, List<String>> entree : carteEnergies.entrySet()) { // Renamed
-                    String lettreType = entree.getKey(); // Renamed
-                    int nombre = entree.getValue().size(); // Renamed
-                    if (nombre > 0) {
-                        Type typeEnumVal = null; // Renamed
-                        for (Type t : Type.values()) {
-                            if (t.asLetter().equals(lettreType)) {
-                                typeEnumVal = t;
-                                break;
-                            }
+    private void peuplerBoiteEnergiesAdversaire(HBox boiteEnergiesCible, IPokemon pokemonConcerne) {
+        if (boiteEnergiesCible == null || pokemonConcerne == null) {
+            if (boiteEnergiesCible != null) {
+                boiteEnergiesCible.getChildren().clear(); // Effacer si pas de pokémon
+            }
+            return;
+        }
+        boiteEnergiesCible.getChildren().clear();
+
+        ObservableMap<String, List<String>> carteEnergies = pokemonConcerne.energieProperty();
+        if (carteEnergies != null) {
+            for (Map.Entry<String, List<String>> entree : carteEnergies.entrySet()) {
+                String lettreType = entree.getKey();
+                int nombre = entree.getValue().size();
+                if (nombre > 0) {
+                    Type typeEnumVal = null;
+                    for (Type t : Type.values()) {
+                        if (t.asLetter().equals(lettreType)) {
+                            typeEnumVal = t;
+                            break;
                         }
-                        if (typeEnumVal != null) {
-                            ImageView vueIconeEnergie = VueUtils.creerVueImagePourIconeEnergie(typeEnumVal, TAILLE_ICONE_ENERGIE_ADV); // Renamed
-                            Label etiquetteNombre = new Label("x" + nombre); // Renamed
-                            HBox boiteEntreeEnergie = new HBox(vueIconeEnergie, etiquetteNombre); // Renamed
-                            boiteEntreeEnergie.setSpacing(2);
-                            energiePokemonActifAdversaireHBox.getChildren().add(boiteEntreeEnergie);
-                        } else { // Repli pour les lettres de type inconnues
-                            Label etiquetteEnergie = new Label(lettreType + " x" + nombre); // Renamed
-                            etiquetteEnergie.getStyleClass().add("energy-tag");
-                            energiePokemonActifAdversaireHBox.getChildren().add(etiquetteEnergie);
-                        }
+                    }
+                    if (typeEnumVal != null) {
+                        ImageView vueIconeEnergie = VueUtils.creerVueImagePourIconeEnergie(typeEnumVal, TAILLE_ICONE_ENERGIE_ADVERSAIRE);
+                        Label etiquetteNombre = new Label("x" + nombre);
+                        HBox boiteEntreeEnergie = new HBox(vueIconeEnergie, etiquetteNombre);
+                        boiteEntreeEnergie.setSpacing(2); // Cohérent avec l'ancien code
+                        boiteEntreeEnergie.setAlignment(Pos.CENTER); // Assurer un alignement cohérent
+                        boiteEnergiesCible.getChildren().add(boiteEntreeEnergie);
+                    } else { // Repli pour les lettres de type inconnues
+                        Label etiquetteEnergie = new Label(lettreType + " x" + nombre);
+                        etiquetteEnergie.getStyleClass().add("energy-tag"); // Style existant
+                        boiteEnergiesCible.getChildren().add(etiquetteEnergie);
                     }
                 }
             }
         }
     }
 
-    private Node creerOpponentPokemonBancNode(IPokemon pokemon) { // Parameter 'pokemon' not translated (type)
+    private void mettreAJourEnergiesPokemonActifAdversaire() {
+        IPokemon pokemonActifAdv = (this.joueurAdverse != null && this.joueurAdverse.pokemonActifProperty() != null) ? this.joueurAdverse.pokemonActifProperty().get() : null;
+        peuplerBoiteEnergiesAdversaire(energiePokemonActifAdversaireHBox, pokemonActifAdv);
+    }
+
+    private Node creerVuePokemonBancAdversaire(IPokemon pokemon) { // Parameter 'pokemon' not translated (type)
         VBox conteneurCartePokemon = new VBox(2); // Renamed
         conteneurCartePokemon.getStyleClass().add("pokemon-node-display");
         conteneurCartePokemon.setAlignment(Pos.CENTER);
@@ -439,7 +448,7 @@ public class VueAdversaire extends VBox {
             conteneurCartePokemon.setUserData(pokemon.getCartePokemon().getId()); // Stocker l'ID de la carte
         }
 
-        ImageView vueImagePokemonBanc = VueUtils.creerVueImagePourCarte(pokemon.getCartePokemon(), LARGEUR_PKMN_BANC_ADV, HAUTEUR_PKMN_BANC_ADV); // Renamed
+        ImageView vueImagePokemonBanc = VueUtils.creerVueImagePourCarte(pokemon.getCartePokemon(), LARGEUR_POKEMON_BANC_ADVERSAIRE, HAUTEUR_POKEMON_BANC_ADVERSAIRE); // Renamed
         Button boutonPokemon = new Button(); // Renamed
         boutonPokemon.setGraphic(vueImagePokemonBanc);
         boutonPokemon.getStyleClass().clear(); // Enlever le style de bouton par défaut
@@ -448,8 +457,8 @@ public class VueAdversaire extends VBox {
         // pokemonButton.setTooltip(infobulle);
 
         boutonPokemon.setOnAction(actionEvent -> {
-            if (this.jeu != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
-                this.jeu.carteSurTerrainCliquee(pokemon.getCartePokemon().getId());
+            if (this.jeuEnCours != null && pokemon != null && pokemon.getCartePokemon() != null && pokemon.getCartePokemon().getId() != null) {
+                this.jeuEnCours.carteSurTerrainCliquee(pokemon.getCartePokemon().getId());
             } else {
                 System.err.println("Clic sur Pokémon de banc adverse, mais pas de Pokémon/carte/ID trouvé."); // Traduit
             }
@@ -469,33 +478,10 @@ public class VueAdversaire extends VBox {
 
         HBox boiteEnergiesH = new HBox(2); // Renamed
         boiteEnergiesH.setAlignment(Pos.CENTER);
-        ObservableMap<String, List<String>> carteEnergies = pokemon.energieProperty(); // Renamed
-        if (carteEnergies != null) {
-            for (Map.Entry<String, List<String>> entree : carteEnergies.entrySet()) { // Renamed
-                 String lettreType = entree.getKey(); // Renamed
-                 int nombre = entree.getValue().size(); // Renamed
-                 if (nombre > 0) {
-                     Type typeEnumVal = null; // Renamed
-                     for (Type t : Type.values()) {
-                         if (t.asLetter().equals(lettreType)) {
-                             typeEnumVal = t;
-                             break;
-                         }
-                     }
-                     if (typeEnumVal != null) {
-                         ImageView vueIconeEnergie = VueUtils.creerVueImagePourIconeEnergie(typeEnumVal, TAILLE_ICONE_ENERGIE_ADV); // Renamed
-                         Label etiquetteNombre = new Label("x" + nombre); // Renamed
-                         HBox boiteEntreeEnergie = new HBox(vueIconeEnergie, etiquetteNombre); // Renamed
-                         boiteEntreeEnergie.setSpacing(2);
-                         boiteEnergiesH.getChildren().add(boiteEntreeEnergie);
-                     } else {
-                        Label etiquetteEnergie = new Label(lettreType + " x" + nombre); // Renamed
-                        etiquetteEnergie.getStyleClass().add("energy-tag");
-                        boiteEnergiesH.getChildren().add(etiquetteEnergie);
-                     }
-                 }
-            }
-        }
+        // L'ancien code de peuplement de boiteEnergiesH est retiré ici.
+        // Appel à la nouvelle méthode utilitaire :
+        peuplerBoiteEnergiesAdversaire(boiteEnergiesH, pokemon);
+
         conteneurCartePokemon.getChildren().addAll(boutonPokemon, etiquettePV, boiteEnergiesH);
 
         return conteneurCartePokemon;
@@ -504,10 +490,10 @@ public class VueAdversaire extends VBox {
     private void placerBancAdversaire() {
         if (bancAdversaireHBox == null) return;
         bancAdversaireHBox.getChildren().clear();
-        if (adversaire != null && adversaire.getBanc() != null) {
-            for (IPokemon pokemonSurBanc : adversaire.getBanc()) { // Renamed
+        if (joueurAdverse != null && joueurAdverse.getBanc() != null) {
+            for (IPokemon pokemonSurBanc : joueurAdverse.getBanc()) { // Renamed
                 if (pokemonSurBanc != null && pokemonSurBanc.getCartePokemon() != null) {
-                    bancAdversaireHBox.getChildren().add(creerOpponentPokemonBancNode(pokemonSurBanc));
+                    bancAdversaireHBox.getChildren().add(creerVuePokemonBancAdversaire(pokemonSurBanc));
                 }
             }
             // Pour les emplacements fixes (afficher des placeholders vides), boucler sur MAX_EMPLACEMENTS_BANC
@@ -518,17 +504,17 @@ public class VueAdversaire extends VBox {
     private void placerMainAdversaire() {
         if (panneauMainAdversaireHBox == null) return;
         panneauMainAdversaireHBox.getChildren().clear();
-        if (adversaire != null && adversaire.getMain() != null) {
-            int tailleMain = adversaire.getMain().size(); // Renamed
+        if (joueurAdverse != null && joueurAdverse.getMain() != null) {
+            int tailleMain = joueurAdverse.getMain().size(); // Renamed
             for (int i = 0; i < tailleMain; i++) {
-                ImageView vueDosCarte = VueUtils.creerVueImagePourDosCarte(LARGEUR_CARTE_MAIN_ADV, HAUTEUR_CARTE_MAIN_ADV); // Renamed
+                ImageView vueDosCarte = VueUtils.creerVueImagePourDosCarte(LARGEUR_CARTE_MAIN_ADVERSAIRE, HAUTEUR_CARTE_MAIN_ADVERSAIRE); // Renamed
                 panneauMainAdversaireHBox.getChildren().add(vueDosCarte);
             }
         }
     }
 
     private void mettreAJourComptesCartesAdversaire() {
-        if (adversaire == null) {
+        if (joueurAdverse == null) {
             // Les étiquettes sont déjà mises à "N/D" ou similaire dans initialiserAffichage si adversaire est null.
             // S'assurer que les images sont aussi cachées.
             if (deckAdversaireImageView != null) deckAdversaireImageView.setVisible(false);
@@ -536,17 +522,17 @@ public class VueAdversaire extends VBox {
             return;
         }
 
-        mainAdversaireLabel.setText("Main Adv. : " + (adversaire.getMain() != null ? adversaire.getMain().size() : "0")); // Traduit
+        mainAdversaireLabel.setText("Main Adv. : " + (joueurAdverse.getMain() != null ? joueurAdverse.getMain().size() : "0")); // Traduit
 
-        int tailleDeLaPioche = (adversaire.piocheProperty() != null) ? adversaire.piocheProperty().size() : 0; // Renamed
+        int tailleDeLaPioche = (joueurAdverse.piocheProperty() != null) ? joueurAdverse.piocheProperty().size() : 0; // Renamed
         deckAdversaireLabel.setText("Pioche Adv. : " + tailleDeLaPioche); // Traduit
         if (deckAdversaireImageView != null) {
             deckAdversaireImageView.setVisible(tailleDeLaPioche > 0);
         }
 
-        defausseAdversaireLabel.setText("Défausse Adv. : " + (adversaire.defausseProperty() != null ? adversaire.defausseProperty().size() : "0")); // Traduit
+        defausseAdversaireLabel.setText("Défausse Adv. : " + (joueurAdverse.defausseProperty() != null ? joueurAdverse.defausseProperty().size() : "0")); // Traduit
 
-        int nombreDePrix = (adversaire.recompensesProperty() != null) ? adversaire.recompensesProperty().size() : 0; // Renamed
+        int nombreDePrix = (joueurAdverse.recompensesProperty() != null) ? joueurAdverse.recompensesProperty().size() : 0; // Renamed
         prixAdversaireLabel.setText("Récomp. Adv. : " + nombreDePrix); // Traduit
         if (prixAdversaireImageView != null) {
             prixAdversaireImageView.setVisible(nombreDePrix > 0);
@@ -555,10 +541,10 @@ public class VueAdversaire extends VBox {
 
     @FXML
     void handleOpponentActivePokemonClick(ActionEvent event) {
-        if (this.jeu != null && this.adversaire != null) {
-            IPokemon pokemonActifAdv = this.adversaire.pokemonActifProperty().get(); // Renamed
+        if (this.jeuEnCours != null && this.joueurAdverse != null) {
+            IPokemon pokemonActifAdv = this.joueurAdverse.pokemonActifProperty().get(); // Renamed
             if (pokemonActifAdv != null && pokemonActifAdv.getCartePokemon() != null && pokemonActifAdv.getCartePokemon().getId() != null) {
-                this.jeu.carteSurTerrainCliquee(pokemonActifAdv.getCartePokemon().getId());
+                this.jeuEnCours.carteSurTerrainCliquee(pokemonActifAdv.getCartePokemon().getId());
             } else {
                 // Optionnel: Gérer le cas où il n'y a pas de Pokémon actif cliquable
                 System.err.println("Clic sur Pokémon actif adverse, mais pas de Pokémon/carte/ID trouvé."); // Traduit
@@ -566,12 +552,12 @@ public class VueAdversaire extends VBox {
         }
     }
 
-    private void mettreAJourStyleSelectionPokemonAdversaire(Carte carteActuellementSelectionnee) {
+    private void actualiserStyleSelectionPokemonAdversaire(Carte carteActuellementSelectionnee) {
         String idCarteSelectionnee = (carteActuellementSelectionnee == null) ? null : carteActuellementSelectionnee.getId();
 
         // Pokémon Actif de l'adversaire
-        if (opponentPokemonActifButton != null && this.adversaire != null) {
-            IPokemon pkmnActifAdv = this.adversaire.pokemonActifProperty().get(); // Renamed
+        if (opponentPokemonActifButton != null && this.joueurAdverse != null) {
+            IPokemon pkmnActifAdv = this.joueurAdverse.pokemonActifProperty().get(); // Renamed
             if (pkmnActifAdv != null && pkmnActifAdv.getCartePokemon() != null && pkmnActifAdv.getCartePokemon().getId() != null) {
                 if (pkmnActifAdv.getCartePokemon().getId().equals(idCarteSelectionnee)) {
                     opponentPokemonActifButton.getStyleClass().add("pokemon-selectionne");
