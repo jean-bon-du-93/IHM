@@ -357,4 +357,23 @@ public class Jeu implements IJeu {
     public void talentAEteRefuse() {
         getJoueurActif().getEtatCourant().talentAEteRefuse();
     }
+
+    public void logRevealCard(Joueur revealingPlayer, Carte revealedCard, String contextMessage) {
+        if (revealingPlayer == null || revealedCard == null) {
+            System.err.println("LOG_REVEAL_ERROR: Player or Card was null.");
+            return;
+        }
+        String cardName = revealedCard.getNom() != null ? revealedCard.getNom() : "Unknown Card";
+        String cardId = revealedCard.getId() != null ? revealedCard.getId() : "N/A";
+
+        String logMessage = String.format("LOG_REVEAL: %s revealed %s (ID: %s). Context: %s",
+                                            revealingPlayer.getNom(),
+                                            cardName,
+                                            cardId,
+                                            contextMessage);
+        System.out.println(logMessage);
+
+        // Optional: update instruction property. This might be immediately overwritten by subsequent state changes.
+        // instructionProperty().setValue(revealingPlayer.getNom() + " a révélé " + cardName + ".");
+    }
 }
