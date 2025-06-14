@@ -21,7 +21,7 @@ public class EtatChoixEnergiePourEnergyGrounding extends EtatJoueur {
         // Filter again to be sure, though previous state should pass correct list
         this.availableEnergies = availableEnergies.stream().filter(Carte::isBasicEnergy).collect(Collectors.toList());
 
-        String instruction = String.format("Select a basic energy from %s (KO) to move to Lanturn.", koPokemon.getNom());
+        String instruction = String.format("Select a basic energy from %s (KO) to move to Lanturn.", koPokemon.getCartePokemon().getNom());
         getJeu().instructionProperty().setValue(instruction);
         // The UI needs to display these availableEnergies as clickable choices.
         // Clicking one should call an appropriate method on IJeu (e.g. uneCarteEnergieAEteChoisie or uneCarteComplementaireAEteChoisie)

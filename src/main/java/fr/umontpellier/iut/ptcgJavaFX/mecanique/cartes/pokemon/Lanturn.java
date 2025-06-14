@@ -1,5 +1,8 @@
 package fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.Joueur;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.Pokemon;
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.Type;
