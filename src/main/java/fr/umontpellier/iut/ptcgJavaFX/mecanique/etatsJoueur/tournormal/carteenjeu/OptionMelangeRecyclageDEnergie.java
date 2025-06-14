@@ -25,8 +25,12 @@ public class OptionMelangeRecyclageDEnergie extends EnJeuRecyclageDEnergie {
             nbCartesAPrendre--;
             if (nbCartesAPrendre != 0) {
                 getJeu().instructionProperty().setValue("Choisissez %d énergie%s à mélanger dans le deck.".formatted(nbCartesAPrendre, nbCartesAPrendre > 1 ? "s" : ""));
-            } else
-                onFinAction();
+            } else {
+                // All chosen energies have been moved to the deck. Now shuffle.
+                joueur.viderListChoixComplementaires(); // Clear the list of choices from discard
+                joueur.melangerPioche(); // Added this line
+                onFinAction(); // Proceeds to EnJeuRecyclageDEnergie.onFinAction() -> TourNormal
+            }
         }
     }
 
