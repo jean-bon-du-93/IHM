@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx/" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="fr.umontpellier.iut.ptcgJavaFX.vues.VueEnergieSelection"
+      spacing="5" styleClass="energy-selection-pane" alignment="TOP_CENTER"
+      prefWidth="300" prefHeight="200"
+      style="-fx-background-color: rgba(200, 200, 200, 0.9); -fx-border-color: black; -fx-border-width: 1;">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    <children>
+        <Label text="Choisissez une énergie:" fx:id="instructionLabel" styleClass="text-14px"/>
+        <FlowPane fx:id="energyCardsPane" hgap="5" vgap="5" alignment="CENTER" prefWrapLength="280">
+            <!-- Energy cards will be added here by the controller -->
+        </FlowPane>
+    </children>
+</VBox>

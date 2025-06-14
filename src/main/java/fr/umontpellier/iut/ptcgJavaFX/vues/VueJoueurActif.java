@@ -98,6 +98,8 @@ public class VueJoueurActif extends VBox {
     @FXML
     private Button retreatButton; // Added for retreat functionality
 
+    private VueEnergieSelection vueEnergieSelection;
+
     // IJeu jeu field should already exist from previous refactoring, ensure it's not final if it was.
     // private IJeu jeu; // Ensure this field is present
 
@@ -160,6 +162,18 @@ public class VueJoueurActif extends VBox {
         if (recompensesJoueurActifImageView != null) {
             recompensesJoueurActifImageView.setImage(VueUtils.creerImageViewPourDosCarte(LARGEUR_DOS_PIOCHE_RECOMPENSE, HAUTEUR_DOS_PIOCHE_RECOMPENSE).getImage());
             recompensesJoueurActifImageView.setVisible(false); // Initially hidden, listener will update
+        }
+
+        // Load VueEnergieSelection
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueEnergieSelection.fxml"));
+            VBox energySelectionNodeAsVBox = loader.load();
+            vueEnergieSelection = loader.getController();
+
+            this.getChildren().add(energySelectionNodeAsVBox);
+            vueEnergieSelection.setPaneVisible(false);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to load VueEnergieSelection.fxml", e);
         }
     }
 
@@ -900,36 +914,75 @@ public class VueJoueurActif extends VBox {
         }
     }
 
+    private boolean isEnergySelectionInstruction(String instruction) {
+        if (instruction == null) return false;
+        String lowerInstruction = instruction.toLowerCase();
+        // Covers "Défaussez une énergie..." and "Défaussez X énergie(s)"
+        return lowerInstruction.startsWith("défaussez") && lowerInstruction.contains("énergie");
+    }
+
     private void handleInstructionChange(String newInstruction) {
         isChoosingNewActivePokemon = "Choisissez un nouveau pokémon actif.".equals(newInstruction);
+
+        if (vueEnergieSelection != null) {
+            if (isEnergySelectionInstruction(newInstruction)) {
+                IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
+                if (joueurCourant != null) {
+                    IPokemon pokemonActif = joueurCourant.pokemonActifProperty().get();
+                    if (pokemonActif != null && pokemonActif.cartesProperty() != null) {
+                        java.util.List<fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte> attachedEnergies =
+                            new java.util.ArrayList<>();
+                        for (ICarte iCarte : pokemonActif.cartesProperty()) {
+                            // Ensure that Carte.get() and getTypeEnergie() are robust
+                            fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte concreteCarte =
+                                fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte.get(iCarte.getId());
+                            if (concreteCarte != null && concreteCarte.getTypeEnergie() != null) {
+                                attachedEnergies.add(concreteCarte);
+                            }
+                        }
+
+                        vueEnergieSelection.setInstructionText(newInstruction);
+                        vueEnergieSelection.populateEnergies(attachedEnergies, this.jeu);
+                        vueEnergieSelection.setPaneVisible(true);
+                        // vueEnergieSelection.toFront(); // if needed
+                    } else {
+                        vueEnergieSelection.setPaneVisible(false);
+                    }
+                } else {
+                    vueEnergieSelection.setPaneVisible(false);
+                }
+            } else {
+                vueEnergieSelection.setPaneVisible(false);
+            }
+        }
         updateUserInteractivity();
     }
 
     private void updateUserInteractivity() {
-        boolean disableOthers = isChoosingNewActivePokemon;
+        boolean energySelectionIsActive = (vueEnergieSelection != null && vueEnergieSelection.isVisible());
+        boolean disableDueToPokemonChoice = isChoosingNewActivePokemon;
 
         if (panneauMainHBox != null) {
-            panneauMainHBox.setDisable(disableOthers);
+            panneauMainHBox.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
         }
         if (pokemonActifButton != null) {
-            pokemonActifButton.setDisable(disableOthers);
+            pokemonActifButton.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
         }
         if (attaquesPane != null) {
-            attaquesPane.setDisable(disableOthers);
+            attaquesPane.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
         }
         if (passerButton != null) {
-            passerButton.setDisable(disableOthers);
+            passerButton.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
         }
 
         if (retreatButton != null) {
             IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
             boolean canPlayerCurrentlyRetreat = false;
             if (joueurCourant != null && joueurCourant.peutRetraiteProperty() != null) {
-                // Ensure peutRetraiteProperty() itself is not null before calling .get()
                 canPlayerCurrentlyRetreat = joueurCourant.peutRetraiteProperty().get();
             }
 
-            if (isChoosingNewActivePokemon) {
+            if (disableDueToPokemonChoice || energySelectionIsActive) {
                 retreatButton.setDisable(true);
             } else {
                 retreatButton.setDisable(!canPlayerCurrentlyRetreat);
