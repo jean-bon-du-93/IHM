@@ -92,13 +92,14 @@ public class VueJoueurActif extends VBox {
     // private final Map<IPokemon, Button> benchPokemonButtons = new HashMap<>(); // RETIRÉ
 
     private boolean isChoosingNewActivePokemon = false; // Added state variable
+    private static final String CLICKABLE_ENERGY_STYLE_CLASS = "clickable-energy-icon";
 
     @FXML
     Button passerButton;
     @FXML
     private Button retreatButton; // Added for retreat functionality
 
-    private VueEnergieSelection vueEnergieSelection;
+    // private VueEnergieSelection vueEnergieSelection; // REMOVED
 
     // IJeu jeu field should already exist from previous refactoring, ensure it's not final if it was.
     // private IJeu jeu; // Ensure this field is present
@@ -164,17 +165,17 @@ public class VueJoueurActif extends VBox {
             recompensesJoueurActifImageView.setVisible(false); // Initially hidden, listener will update
         }
 
-        // Load VueEnergieSelection
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueEnergieSelection.fxml"));
-            VBox energySelectionNodeAsVBox = loader.load();
-            vueEnergieSelection = loader.getController();
+        // Load VueEnergieSelection - REMOVED
+        // try {
+        //     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueEnergieSelection.fxml"));
+        //     VBox energySelectionNodeAsVBox = loader.load();
+        //     vueEnergieSelection = loader.getController();
 
-            this.getChildren().add(energySelectionNodeAsVBox);
-            vueEnergieSelection.setPaneVisible(false);
-        } catch (java.io.IOException e) {
-            throw new RuntimeException("Failed to load VueEnergieSelection.fxml", e);
-        }
+        //     this.getChildren().add(energySelectionNodeAsVBox);
+        //     vueEnergieSelection.setPaneVisible(false);
+        // } catch (java.io.IOException e) {
+        //     throw new RuntimeException("Failed to load VueEnergieSelection.fxml", e);
+        // }
     }
 
     @FXML
@@ -538,32 +539,14 @@ public class VueJoueurActif extends VBox {
     private void populateActivePokemonEnergy(IPokemon activePokemon) {
         if (energiePokemonActifHBox != null) {
             energiePokemonActifHBox.getChildren().clear();
-            if (activePokemon != null) {
-                ObservableMap<String, List<String>> energieMap = activePokemon.energieProperty();
-                if (energieMap != null) {
-                    for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                        String typeLetter = entry.getKey();
-                        int count = entry.getValue().size();
-                        if (count > 0) {
-                            Type typeEnum = null;
-                            for (Type t : Type.values()) {
-                                if (t.asLetter().equals(typeLetter)) {
-                                    typeEnum = t;
-                                    break;
-                                }
-                            }
-                            if (typeEnum != null) {
-                                ImageView iconeEnergie = VueUtils.creerImageViewPourIconeEnergie(typeEnum, TAILLE_ICONE_ENERGIE);
-                                Label countLabel = new Label("x" + count);
-                                HBox energyEntryBox = new HBox(iconeEnergie, countLabel);
-                                energyEntryBox.setSpacing(2);
-                                energiePokemonActifHBox.getChildren().add(energyEntryBox);
-                            } else { // Fallback if type letter not found (should not happen)
-                                Label energyLabel = new Label(typeLetter + " x" + count);
-                                energyLabel.getStyleClass().add("energy-tag");
-                                energiePokemonActifHBox.getChildren().add(energyLabel);
-                            }
-                        }
+            if (activePokemon != null && activePokemon.cartesProperty() != null) {
+                for (ICarte iCarte : activePokemon.cartesProperty()) {
+                    Carte concreteCarte = Carte.get(iCarte.getId());
+                    if (concreteCarte != null && concreteCarte.getTypeEnergie() != null) {
+                        ImageView energyIcon = VueUtils.creerImageViewPourIconeEnergie(concreteCarte.getTypeEnergie(), TAILLE_ICONE_ENERGIE);
+                        energyIcon.setUserData(concreteCarte.getId());
+                        // Potentially add click handler or tooltip if needed in the future
+                        energiePokemonActifHBox.getChildren().add(energyIcon);
                     }
                 }
             }
@@ -784,30 +767,14 @@ public class VueJoueurActif extends VBox {
     private void populateBenchPokemonEnergy(HBox energyHBoxContainer, IPokemon pokemon) {
         if (energyHBoxContainer == null || pokemon == null) return;
         energyHBoxContainer.getChildren().clear();
-        ObservableMap<String, List<String>> energieMap = pokemon.energieProperty();
-        if (energieMap != null) {
-            for (Map.Entry<String, List<String>> entry : energieMap.entrySet()) {
-                String typeLetter = entry.getKey();
-                int count = entry.getValue().size();
-                if (count > 0) {
-                    Type typeEnum = null;
-                    for (Type t : Type.values()) {
-                        if (t.asLetter().equals(typeLetter)) {
-                            typeEnum = t;
-                            break;
-                        }
-                    }
-                    if (typeEnum != null) {
-                        ImageView iconeEnergie = VueUtils.creerImageViewPourIconeEnergie(typeEnum, TAILLE_ICONE_ENERGIE);
-                        Label countLabel = new Label("x" + count);
-                        HBox energyEntryBox = new HBox(iconeEnergie, countLabel);
-                        energyEntryBox.setSpacing(2);
-                        energyHBoxContainer.getChildren().add(energyEntryBox);
-                    } else { // Fallback if type letter not found
-                        Label energyLabel = new Label(typeLetter + " x" + count);
-                        energyLabel.getStyleClass().add("energy-tag");
-                        energyHBoxContainer.getChildren().add(energyLabel);
-                    }
+        if (pokemon.cartesProperty() != null) {
+            for (ICarte iCarte : pokemon.cartesProperty()) {
+                Carte concreteCarte = Carte.get(iCarte.getId());
+                if (concreteCarte != null && concreteCarte.getTypeEnergie() != null) {
+                    ImageView energyIcon = VueUtils.creerImageViewPourIconeEnergie(concreteCarte.getTypeEnergie(), TAILLE_ICONE_ENERGIE);
+                    energyIcon.setUserData(concreteCarte.getId());
+                    // Potentially add click handler or tooltip if needed in the future
+                    energyHBoxContainer.getChildren().add(energyIcon);
                 }
             }
         }
@@ -924,55 +891,62 @@ public class VueJoueurActif extends VBox {
     private void handleInstructionChange(String newInstruction) {
         isChoosingNewActivePokemon = "Choisissez un nouveau pokémon actif.".equals(newInstruction);
 
-        if (vueEnergieSelection != null) {
-            if (isEnergySelectionInstruction(newInstruction)) {
-                IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
-                if (joueurCourant != null) {
-                    IPokemon pokemonActif = joueurCourant.pokemonActifProperty().get();
-                    if (pokemonActif != null && pokemonActif.cartesProperty() != null) {
-                        java.util.List<fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte> attachedEnergies =
-                            new java.util.ArrayList<>();
-                        for (ICarte iCarte : pokemonActif.cartesProperty()) {
-                            // Ensure that Carte.get() and getTypeEnergie() are robust
-                            fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte concreteCarte =
-                                fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte.get(iCarte.getId());
-                            if (concreteCarte != null && concreteCarte.getTypeEnergie() != null) {
-                                attachedEnergies.add(concreteCarte);
-                            }
-                        }
+        boolean isEnergyInstruction = isEnergySelectionInstruction(newInstruction);
 
-                        vueEnergieSelection.setInstructionText(newInstruction);
-                        vueEnergieSelection.populateEnergies(attachedEnergies, this.jeu);
-                        vueEnergieSelection.setPaneVisible(true);
-                        // vueEnergieSelection.toFront(); // if needed
-                    } else {
-                        vueEnergieSelection.setPaneVisible(false);
+        if (isEnergyInstruction) {
+            // Make energies on active Pokemon clickable
+            if (energiePokemonActifHBox != null) {
+                for (Node node : energiePokemonActifHBox.getChildren()) {
+                    if (node instanceof ImageView) {
+                        ImageView imageView = (ImageView) node;
+                        // Clear previous handler to be safe, though populate should recreate ImageViews
+                        imageView.setOnMouseClicked(null);
+                        imageView.setOnMouseClicked(event -> {
+                            String cardId = (String) imageView.getUserData();
+                            if (this.jeu != null && cardId != null) {
+                                this.jeu.uneCarteEnergieAEteChoisie(cardId);
+                            }
+                        });
+                        if (!imageView.getStyleClass().contains(CLICKABLE_ENERGY_STYLE_CLASS)) {
+                            imageView.getStyleClass().add(CLICKABLE_ENERGY_STYLE_CLASS);
+                        }
                     }
-                } else {
-                    vueEnergieSelection.setPaneVisible(false);
                 }
-            } else {
-                vueEnergieSelection.setPaneVisible(false);
+            }
+        } else {
+            // Remove click handlers and style from active Pokemon's energies if not selecting
+            if (energiePokemonActifHBox != null) {
+                for (Node node : energiePokemonActifHBox.getChildren()) {
+                    if (node instanceof ImageView) {
+                        ImageView imageView = (ImageView) node;
+                        imageView.setOnMouseClicked(null);
+                        imageView.getStyleClass().remove(CLICKABLE_ENERGY_STYLE_CLASS);
+                    }
+                }
             }
         }
         updateUserInteractivity();
     }
 
     private void updateUserInteractivity() {
-        boolean energySelectionIsActive = (vueEnergieSelection != null && vueEnergieSelection.isVisible());
+        // boolean energySelectionIsActive = (vueEnergieSelection != null && vueEnergieSelection.isVisible()); // REMOVED
+        boolean instructionIsForEnergySelection = false;
+        if (this.jeu != null && this.jeu.instructionProperty() != null) {
+             instructionIsForEnergySelection = isEnergySelectionInstruction(this.jeu.instructionProperty().get());
+        }
         boolean disableDueToPokemonChoice = isChoosingNewActivePokemon;
 
         if (panneauMainHBox != null) {
-            panneauMainHBox.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
+            panneauMainHBox.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
         }
         if (pokemonActifButton != null) {
-            pokemonActifButton.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
+            pokemonActifButton.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
         }
         if (attaquesPane != null) {
-            attaquesPane.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
+            attaquesPane.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
         }
         if (passerButton != null) {
-            passerButton.setDisable(disableDueToPokemonChoice || energySelectionIsActive);
+            passerButton.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
         }
 
         if (retreatButton != null) {
@@ -982,7 +956,7 @@ public class VueJoueurActif extends VBox {
                 canPlayerCurrentlyRetreat = joueurCourant.peutRetraiteProperty().get();
             }
 
-            if (disableDueToPokemonChoice || energySelectionIsActive) {
+            if (disableDueToPokemonChoice || instructionIsForEnergySelection) {
                 retreatButton.setDisable(true);
             } else {
                 retreatButton.setDisable(!canPlayerCurrentlyRetreat);
