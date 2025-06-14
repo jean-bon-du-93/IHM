@@ -58,6 +58,14 @@
     </Label>
     <HBox fx:id="panneauMainHBox" spacing="5"/>
 
-    <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
+    <HBox fx:id="actionsPane" spacing="10" alignment="CENTER_LEFT">
+        <children>
+            <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
+            <Button fx:id="retreatButton" text="Battre en retraite" styleClass="text-18px"/>
+        </children>
+        <VBox.margin>
+            <Insets top="10"/>
+        </VBox.margin>
+    </HBox>
 
 </fx:root>

@@ -95,6 +95,8 @@ public class VueJoueurActif extends VBox {
 
     @FXML
     Button passerButton;
+    @FXML
+    private Button retreatButton; // Added for retreat functionality
 
     // IJeu jeu field should already exist from previous refactoring, ensure it's not final if it was.
     // private IJeu jeu; // Ensure this field is present
@@ -139,6 +141,15 @@ public class VueJoueurActif extends VBox {
             });
             // Process initial instruction
             handleInstructionChange(this.jeu.instructionProperty().get());
+        }
+
+        // Setup action for the retreat button
+        if (retreatButton != null) {
+            retreatButton.setOnAction(event -> {
+                if (this.jeu != null) {
+                    this.jeu.retraiteAEteChoisie();
+                }
+            });
         }
 
         // Initialize deck and prize card images
@@ -288,6 +299,10 @@ public class VueJoueurActif extends VBox {
                 if (oldJoueur.recompensesProperty() != null && this.recompensesListener != null) {
                     oldJoueur.recompensesProperty().removeListener(this.recompensesListener);
                 }
+                // Unbind retreat button from old player
+                if (retreatButton != null) {
+                    retreatButton.disableProperty().unbind();
+                }
             }
 
             // Update displays for newJoueur
@@ -333,6 +348,14 @@ public class VueJoueurActif extends VBox {
                     if (recompensesJoueurActifLabel != null) recompensesJoueurActifLabel.setText("R: " + tailleRecompenses);
                     if (recompensesJoueurActifImageView != null) recompensesJoueurActifImageView.setVisible(tailleRecompenses > 0);
                 }
+                // Bind retreat button to new player's peutRetraiteProperty
+                if (newJoueur.peutRetraiteProperty() != null && retreatButton != null) { // Check if property itself is null
+                    retreatButton.disableProperty().bind(newJoueur.peutRetraiteProperty().not());
+                } else if (retreatButton != null) { // Property is null, so disable button
+                    retreatButton.disableProperty().unbind();
+                    retreatButton.setDisable(true);
+                }
+
             } else { // No new player (e.g. game end), clear displays
                 if (energiePokemonActifHBox != null) energiePokemonActifHBox.getChildren().clear();
                 if (attaquesPane != null) attaquesPane.getChildren().clear();
@@ -340,6 +363,11 @@ public class VueJoueurActif extends VBox {
                 if (piocheJoueurActifImageView != null) piocheJoueurActifImageView.setVisible(false);
                 if (recompensesJoueurActifLabel != null) recompensesJoueurActifLabel.setText("R: 0");
                 if (recompensesJoueurActifImageView != null) recompensesJoueurActifImageView.setVisible(false);
+                // Disable retreat button if no active player
+                if (retreatButton != null) {
+                    retreatButton.disableProperty().unbind(); // Unbind first
+                    retreatButton.setDisable(true);      // Then disable
+                }
             }
         };
         this.joueurActifProperty.addListener(this.joueurActifGlobalChangeListener);
@@ -889,6 +917,33 @@ public class VueJoueurActif extends VBox {
         }
         if (passerButton != null) {
             passerButton.setDisable(disableOthers);
+        }
+        if (retreatButton != null) { // Also disable retreat button during this specific instruction
+            // We only want to disable it if 'disableOthers' is true.
+            // If 'disableOthers' is false, its state is determined by its binding to peutRetraiteProperty.
+            if (disableOthers) {
+                retreatButton.setDisable(true);
+            } else {
+                // If not choosing new active pokemon, re-evaluate disable based on binding.
+                // This requires the binding to be set up correctly.
+                // A simple way is to rely on the joueurActifGlobalChangeListener to set the binding.
+                // If newJoueur is null or newJoueur.peutRetraiteProperty() is null or false, it will be disabled.
+                // If newJoueur.peutRetraiteProperty() is true, it will be enabled.
+                // This part might need refinement if direct control is needed here beyond what binding provides.
+                // For now, let's assume the binding correctly reflects the state when not (disableOthers).
+                // So, if disableOthers is false, we don't touch retreatButton.disable here, let binding rule.
+                // However, the prompt implies it should be disabled along with others.
+                 IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
+                 if (joueurCourant != null && joueurCourant.peutRetraiteProperty() != null) {
+                    // If we are not in "choosing new active" mode, the button's state should follow its binding.
+                    // No direct setDisable(false) here as that would override the binding.
+                    // The binding itself will enable/disable it.
+                    // If disableOthers is true, it means we ARE choosing a new active, so it should be disabled.
+                 } else if (retreatButton != null) {
+                    // No player or no property, should be disabled by binding logic or here if no binding active
+                    retreatButton.setDisable(true);
+                 }
+            }
         }
 
         // Optionally, highlight the bench or provide other cues
