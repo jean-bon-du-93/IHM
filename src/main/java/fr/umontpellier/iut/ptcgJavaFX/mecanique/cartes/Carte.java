@@ -117,4 +117,30 @@ public abstract class Carte implements Comparable<Carte>, ICarte {
     public int getCoutRetraite() {
         return 0; // Default for non-Pokemon cards
     }
+
+    public boolean isBasicEnergy() {
+        // Basic implementation: checks if it's a known basic energy type by name.
+        // This needs to be robust based on how energy cards are named in the game.
+        // Example:
+        if (this.getTypeEnergie() == null) return false; // Not an energy
+
+        // Assuming basic energies are simply named "Énergie <Type>" e.g. "Énergie Feu"
+        // and special energies have more complex names or a different classification.
+        // This is a placeholder, actual project may have better way to identify basic energy.
+        switch (this.getNom()) {
+            case "Énergie Feu":
+            case "Énergie Eau":
+            case "Énergie Plante":
+            case "Énergie Électrique":
+            case "Énergie Psy":
+            case "Énergie Combat":
+            case "Énergie Obscurité":
+            case "Énergie Métal":
+            case "Énergie Fée":
+                return true;
+            default:
+                // Could also check if name *starts* with "Énergie " and has no other special words
+                return false;
+        }
+    }
 }

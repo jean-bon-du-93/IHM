@@ -62,6 +62,8 @@
         <children>
             <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
             <Button fx:id="retreatButton" text="Battre en retraite" styleClass="text-18px"/>
+            <Button fx:id="acceptTalentButton" text="Oui (Talent)" visible="false" managed="false" styleClass="text-18px"/>
+            <Button fx:id="declineTalentButton" text="Non (Talent)" visible="false" managed="false" styleClass="text-18px"/>
         </children>
         <VBox.margin>
             <Insets top="10"/>
