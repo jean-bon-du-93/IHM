@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.TextField; // Added import
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -15,6 +16,11 @@ import java.util.List;
  * Lorsque l'utilisateur a fini de saisir les noms de joueurs, il demandera à démarrer la partie.
  */
 public class VueChoixJoueurs extends Stage {
+
+    @FXML
+    private TextField joueur1NameField; // Added field
+    @FXML
+    private TextField joueur2NameField; // Added field
 
     private final ObservableList<String> nomsJoueurs;
 
@@ -33,7 +39,9 @@ public class VueChoixJoueurs extends Stage {
     /**
      * Définit l'action à exécuter lorsque la liste des participants est correctement initialisée
      */
-    public void setNomsDesJoueursDefinisListener(ListChangeListener<String> quandLesNomsDesJoueursSontDefinis) {}
+    public void setNomsDesJoueursDefinisListener(ListChangeListener<String> quandLesNomsDesJoueursSontDefinis) {
+        this.nomsJoueurs.addListener(quandLesNomsDesJoueursSontDefinis);
+    }
 
 
     /**
@@ -64,7 +72,12 @@ public class VueChoixJoueurs extends Stage {
      * @param playerNumber : le numéro du participant
      */
     protected String getJoueurParNumero(int playerNumber) {
-        throw new RuntimeException("Methode à implémenter");
+        if (playerNumber == 0) {
+            return joueur1NameField != null ? joueur1NameField.getText() : null;
+        } else if (playerNumber == 1) {
+            return joueur2NameField != null ? joueur2NameField.getText() : null;
+        }
+        return null; // Should not happen for a 2-player game setup
     }
 
 }
