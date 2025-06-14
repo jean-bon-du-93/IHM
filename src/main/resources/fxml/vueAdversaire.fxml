@@ -2,67 +2,89 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.Button?>
+<?import javafx.geometry.Pos?>
 
-<fx:root type="javafx.scene.layout.VBox"
-         spacing="8"
+<!-- Root changed to BorderPane -->
+<fx:root type="javafx.scene.layout.BorderPane"
          stylesheets="@../css/style.css"
          styleClass="opponent-area"
          xmlns:fx="http://javafx.com/fxml/1"
          xmlns="http://javafx.com/javafx/11.0.1">
 
-    <Label fx:id="nomAdversaireLabel" styleClass="text-18px" text="Nom Adversaire">
-        <VBox.margin>
-            <Insets bottom="5.0" />
-        </VBox.margin>
-    </Label>
+    <left>
+        <VBox spacing="10" alignment="TOP_CENTER" styleClass="game-info-panel">
+            <BorderPane.margin>
+                <Insets right="10"/>
+            </BorderPane.margin>
+            <padding>
+                <Insets top="10" bottom="10" left="5" right="5"/>
+            </padding>
+            <children>
+                <Label text="Deck Adv.:" styleClass="text-14px-bold"/>
+                <ImageView fx:id="deckAdversaireImageView" fitWidth="30" fitHeight="42" preserveRatio="true"/>
+                <Label fx:id="deckAdversaireLabel" styleClass="text-12px"/>
 
-    <!-- New Main HBox for Active Pokemon and Bench -->
-    <HBox spacing="20" alignment="TOP_LEFT">
-        <children>
-            <!-- Inner VBox for Active Pokemon Area -->
-            <VBox fx:id="opponentPokemonActifVBox" spacing="5" alignment="TOP_LEFT">
-                <children>
-                    <Label text="Pokémon Actif de l'adversaire:" styleClass="text-18px"/>
-                    <Button fx:id="opponentPokemonActifButton" text="Pokemon Actif Adv." styleClass="card-button text-18px" minHeight="60" onAction="#handleOpponentActivePokemonClick"/>
-                    <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER_LEFT" minHeight="20">
-                        <!-- Removed VBox.margin as parent VBox now handles spacing -->
-                    </HBox>
-                </children>
-            </VBox>
+                <Label text="Récomp. Adv.:" styleClass="text-14px-bold">
+                    <VBox.margin><Insets top="10"/></VBox.margin>
+                </Label>
+                <ImageView fx:id="prixAdversaireImageView" fitWidth="30" fitHeight="42" preserveRatio="true"/>
+                <Label fx:id="prixAdversaireLabel" styleClass="text-12px"/>
 
-            <!-- Inner VBox for Bench Area -->
-            <VBox spacing="5" alignment="TOP_LEFT">
-                <children>
-                    <Label text="Banc de l'adversaire:" styleClass="text-18px"/>
-                    <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="70">
-                        <!-- Removed VBox.margin as parent VBox now handles spacing -->
-                    </HBox>
-                </children>
-            </VBox>
-        </children>
-        <VBox.margin>
-            <Insets bottom="10.0" /> <!-- Add some margin below the new HBox -->
-        </VBox.margin>
-    </HBox>
+                <Label text="Main Adv. (Nb):" styleClass="text-14px-bold">
+                    <VBox.margin><Insets top="10"/></VBox.margin>
+                </Label>
+                <Label fx:id="mainAdversaireLabel" styleClass="text-12px"/>
 
-    <Label text="Main de l'adversaire:" styleClass="text-18px"/>
-    <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT" minHeight="50"> <!-- Min height for card backs -->
-        <VBox.margin>
-            <Insets bottom="10.0" />
-        </VBox.margin>
-    </HBox>
+                <Label text="Défausse Adv.:" styleClass="text-14px-bold">
+                    <VBox.margin><Insets top="10"/></VBox.margin>
+                </Label>
+                <Label fx:id="defausseAdversaireLabel" styleClass="text-12px"/>
+            </children>
+        </VBox>
+    </left>
 
-    <HBox spacing="15" alignment="CENTER_LEFT">
-        <padding>
-            <Insets top="5.0" />
-        </padding>
-        <Label fx:id="mainAdversaireLabel" styleClass="text-18px" text="Main: X"/>
-        <Label fx:id="deckAdversaireLabel" styleClass="text-18px" text="Deck: Y"/>
-        <Label fx:id="defausseAdversaireLabel" styleClass="text-18px" text="Défausse: Z"/>
-        <Label fx:id="prixAdversaireLabel" styleClass="text-18px" text="Prix: P"/>
-    </HBox>
+    <center>
+        <VBox spacing="8" styleClass="opponent-main-content-area">
+            <padding>
+                <Insets top="5" bottom="5" left="5" right="5"/>
+            </padding>
+            <children>
+                <Label fx:id="nomAdversaireLabel" styleClass="text-18px-bold" alignment="CENTER" maxWidth="Infinity"/>
 
+                <HBox spacing="20" alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+                    <VBox fx:id="opponentPokemonActifVBox" spacing="5" alignment="CENTER" HBox.hgrow="NEVER">
+                        <children>
+                            <Label text="Actif Adv.:" styleClass="text-14px-bold"/>
+                            <Button fx:id="opponentPokemonActifButton" styleClass="card-button" onAction="#handleOpponentActivePokemonClick"/>
+                            <HBox fx:id="energiePokemonActifAdversaireHBox" spacing="2" alignment="CENTER" minHeight="-Infinity"/>
+                        </children>
+                    </VBox>
+
+                    <VBox spacing="5" alignment="TOP_LEFT" HBox.hgrow="ALWAYS">
+                        <children>
+                            <Label text="Banc Adv.:" styleClass="text-14px-bold"/>
+                            <ScrollPane fitToWidth="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" styleClass="bench-scroll-pane">
+                                <HBox fx:id="bancAdversaireHBox" spacing="5" alignment="CENTER_LEFT" minHeight="90"/> <!-- Min height for bench cards -->
+                            </ScrollPane>
+                        </children>
+                    </VBox>
+                </HBox>
+
+                <Label text="Main de l'adversaire (Cartes):" styleClass="text-14px-bold">
+                     <VBox.margin><Insets top="5" bottom="2"/></VBox.margin>
+                </Label>
+                <ScrollPane fitToWidth="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" prefHeight="100" minHeight="70" VBox.vgrow="SOMETIMES">
+                    <content>
+                        <HBox fx:id="panneauMainAdversaireHBox" spacing="3" alignment="CENTER_LEFT"/>
+                    </content>
+                </ScrollPane>
+            </children>
+        </VBox>
+    </center>
 </fx:root>
