@@ -347,4 +347,14 @@ public class Jeu implements IJeu {
             System.err.println("Carte cliquée avec ID " + idCarte + " non trouvée sur le terrain.");
         }
     }
+
+    @Override
+    public void talentAEteAccepte() {
+        getJoueurActif().getEtatCourant().talentAEteAccepte();
+    }
+
+    @Override
+    public void talentAEteRefuse() {
+        getJoueurActif().getEtatCourant().talentAEteRefuse();
+    }
 }

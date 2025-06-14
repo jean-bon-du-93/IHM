@@ -27,4 +27,7 @@ public abstract class EtatJoueur {
     protected Jeu getJeu() {
         return joueur.getJeu();
     }
+
+    public void talentAEteAccepte() { /* Default: do nothing or log error */ }
+    public void talentAEteRefuse() { /* Default: do nothing or log error */ }
 }

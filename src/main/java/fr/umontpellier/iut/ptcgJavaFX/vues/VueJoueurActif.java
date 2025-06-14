@@ -100,6 +100,10 @@ public class VueJoueurActif extends VBox {
     Button passerButton;
     @FXML
     private Button retreatButton; // Added for retreat functionality
+    @FXML
+    private Button acceptTalentButton;
+    @FXML
+    private Button declineTalentButton;
 
     // private VueEnergieSelection vueEnergieSelection; // REMOVED
 
@@ -154,6 +158,16 @@ public class VueJoueurActif extends VBox {
                 if (this.jeu != null) {
                     this.jeu.retraiteAEteChoisie();
                 }
+            });
+        }
+        if (acceptTalentButton != null) {
+            acceptTalentButton.setOnAction(event -> {
+                if (this.jeu != null) this.jeu.talentAEteAccepte();
+            });
+        }
+        if (declineTalentButton != null) {
+            declineTalentButton.setOnAction(event -> {
+                if (this.jeu != null) this.jeu.talentAEteRefuse();
             });
         }
 
@@ -898,20 +912,38 @@ public class VueJoueurActif extends VBox {
     private void handleInstructionChange(String newInstruction) {
         isChoosingNewActivePokemon = "Choisissez un nouveau pokémon actif.".equals(newInstruction);
 
-        boolean isEnergyInstruction = isEnergySelectionInstruction(newInstruction);
+        boolean isEnergyGroundingChoice = isEnergyGroundingChoiceInstruction(newInstruction);
+        if (acceptTalentButton != null) {
+            acceptTalentButton.setVisible(isEnergyGroundingChoice);
+            acceptTalentButton.setManaged(isEnergyGroundingChoice);
+        }
+        if (declineTalentButton != null) {
+            declineTalentButton.setVisible(isEnergyGroundingChoice);
+            declineTalentButton.setManaged(isEnergyGroundingChoice);
+        }
 
-        if (isEnergyInstruction) {
+        boolean isEnergySelectionForGrounding = isEnergyGroundingEnergySelectionInstruction(newInstruction);
+        // The logic for making energy icons clickable if isEnergySelectionInstruction(newInstruction) is true
+        // (which covers general energy selection for discard, not just for this talent)
+        // should remain or be adapted.
+        // For Energy Grounding, the specific energy selection is handled by choixComplementaires.
+        // However, the original instruction also made active pokemon energies clickable for discard.
+        // We need to decide if that general behavior is still desired or if it's only talent-specific now.
+        // For now, let's keep the existing isEnergySelectionInstruction logic for active pokemon energy clicks.
+
+        boolean isGeneralEnergySelection = isEnergySelectionInstruction(newInstruction);
+
+        if (isGeneralEnergySelection && !isEnergySelectionForGrounding) { // Only for general discard, not for talent target selection
             // Make energies on active Pokemon clickable
             if (energiePokemonActifHBox != null) {
                 for (Node node : energiePokemonActifHBox.getChildren()) {
                     if (node instanceof ImageView) {
                         ImageView imageView = (ImageView) node;
-                        // Clear previous handler to be safe, though populate should recreate ImageViews
                         imageView.setOnMouseClicked(null);
                         imageView.setOnMouseClicked(event -> {
                             String cardId = (String) imageView.getUserData();
                             if (this.jeu != null && cardId != null) {
-                                this.jeu.uneCarteEnergieAEteChoisie(cardId);
+                                this.jeu.uneCarteEnergieAEteChoisie(cardId); // This is for general energy discard
                             }
                         });
                         if (!imageView.getStyleClass().contains(CLICKABLE_ENERGY_STYLE_CLASS)) {
@@ -920,8 +952,8 @@ public class VueJoueurActif extends VBox {
                     }
                 }
             }
-        } else {
-            // Remove click handlers and style from active Pokemon's energies if not selecting
+        } else if (!isEnergyGroundingChoice && !isEnergySelectionForGrounding) { // Not any energy related instruction that needs active pokemon energy clicks
+            // Remove click handlers and style from active Pokemon's energies
             if (energiePokemonActifHBox != null) {
                 for (Node node : energiePokemonActifHBox.getChildren()) {
                     if (node instanceof ImageView) {
@@ -932,42 +964,79 @@ public class VueJoueurActif extends VBox {
                 }
             }
         }
+        // If it's isEnergySelectionForGrounding, the selection is handled by choixComplementaires,
+        // so active Pokemon energies should not be clickable in that specific context unless desired.
+        // The current logic makes them clickable if isGeneralEnergySelection is true.
+        // This might need refinement if isEnergySelectionInstruction overlaps with isEnergyGroundingEnergySelectionInstruction
+        // in a way that causes unintended clickability.
+        // For now, the above should correctly handle general discards vs. talent-specific UI.
+
         updateUserInteractivity();
     }
 
+    private boolean isEnergyGroundingChoiceInstruction(String instruction) {
+        if (instruction == null) return false;
+        return instruction.startsWith("Lanturn's Energy Grounding: Move a basic energy");
+    }
+
+    private boolean isEnergyGroundingEnergySelectionInstruction(String instruction) {
+        if (instruction == null) return false;
+        return instruction.startsWith("Select a basic energy from") && instruction.contains("to move to Lanturn");
+    }
+
     private void updateUserInteractivity() {
-        // boolean energySelectionIsActive = (vueEnergieSelection != null && vueEnergieSelection.isVisible()); // REMOVED
-        boolean instructionIsForEnergySelection = false;
+        boolean instructionIsForEnergyGroundingChoice = false;
+        boolean instructionIsForEnergyGroundingEnergySelection = false;
+        boolean isGeneralEnergyDiscardInstruction = false;
+
         if (this.jeu != null && this.jeu.instructionProperty() != null) {
-             instructionIsForEnergySelection = isEnergySelectionInstruction(this.jeu.instructionProperty().get());
+            String currentInstruction = this.jeu.instructionProperty().get();
+            instructionIsForEnergyGroundingChoice = isEnergyGroundingChoiceInstruction(currentInstruction);
+            instructionIsForEnergyGroundingEnergySelection = isEnergyGroundingEnergySelectionInstruction(currentInstruction);
+            isGeneralEnergyDiscardInstruction = isEnergySelectionInstruction(currentInstruction) && !instructionIsForEnergyGroundingEnergySelection; // General discard, not specific to this talent's target selection
         }
-        boolean disableDueToPokemonChoice = isChoosingNewActivePokemon;
+
+        IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
+        boolean isChoosingComplementaryCard = (joueurCourant != null && joueurCourant.getChoixComplementaires() != null && !joueurCourant.getChoixComplementaires().isEmpty());
+
+        // Disable main actions if choosing new active, or if talent yes/no choice is up,
+        // or if selecting energy for talent from choixComplementaires.
+        boolean disableMainActions = isChoosingNewActivePokemon || instructionIsForEnergyGroundingChoice || (isChoosingComplementaryCard && instructionIsForEnergyGroundingEnergySelection);
 
         if (panneauMainHBox != null) {
-            panneauMainHBox.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
+            panneauMainHBox.setDisable(disableMainActions);
         }
         if (pokemonActifButton != null) {
-            pokemonActifButton.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
+            pokemonActifButton.setDisable(disableMainActions);
         }
         if (attaquesPane != null) {
-            attaquesPane.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
+            attaquesPane.setDisable(disableMainActions);
         }
         if (passerButton != null) {
-            passerButton.setDisable(disableDueToPokemonChoice || instructionIsForEnergySelection);
+            passerButton.setDisable(disableMainActions);
         }
 
         if (retreatButton != null) {
-            IJoueur joueurCourant = (joueurActifProperty != null) ? joueurActifProperty.get() : null;
             boolean canPlayerCurrentlyRetreat = false;
             if (joueurCourant != null && joueurCourant.peutRetraiteProperty() != null) {
                 canPlayerCurrentlyRetreat = joueurCourant.peutRetraiteProperty().get();
             }
 
-            if (disableDueToPokemonChoice || instructionIsForEnergySelection) {
+            if (disableMainActions) {
                 retreatButton.setDisable(true);
             } else {
                 retreatButton.setDisable(!canPlayerCurrentlyRetreat);
             }
+        }
+
+        // Visibility of talent buttons is handled in handleInstructionChange.
+        // Here, we ensure other buttons are disabled when they are visible.
+        if (acceptTalentButton != null && acceptTalentButton.isVisible()) {
+             if (panneauMainHBox != null) panneauMainHBox.setDisable(true);
+             if (pokemonActifButton != null) pokemonActifButton.setDisable(true);
+             if (attaquesPane != null) attaquesPane.setDisable(true);
+             if (passerButton != null) passerButton.setDisable(true);
+             if (retreatButton != null) retreatButton.setDisable(true);
         }
 
         // Optionally, highlight the bench or provide other cues

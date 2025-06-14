@@ -23,6 +23,8 @@ public interface IJeu {
     void defausserEnergieNAPasEteChoisi();
     void uneCarteEnergieAEteChoisie(String idCarteEnergie);
     void uneCarteComplementaireAEteChoisie(String idCartecomplementaire);
-
     void carteSurTerrainCliquee(String idCarte);
+
+    void talentAEteAccepte();
+    void talentAEteRefuse();
 }
