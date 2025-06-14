@@ -24,6 +24,7 @@ import javafx.scene.image.ImageView; // Added for image display
 import javafx.scene.layout.FlowPane; // Added for attaquesPane
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane; // Added for BorderPane
 import javafx.scene.Node; // Added for mettreAJourStyleSelectionPokemon
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added for mettreAJourStyleSelectionPokemon
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Attaque; // Added for attaques
@@ -36,7 +37,7 @@ import java.util.HashMap; // Added for new Maps
 import java.util.List; // Added for type in MapChangeListener
 import java.util.Map; // Added for new Maps
 
-public class VueJoueurActif extends VBox {
+public class VueJoueurActif extends BorderPane { // Changed from VBox to BorderPane
 
     private static final int MAX_BENCH_SLOTS = 5; // Added constant
 

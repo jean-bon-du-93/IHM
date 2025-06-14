@@ -7,11 +7,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 // import javafx.scene.control.Button; // No longer used
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane; // Changed from VBox to BorderPane
+import javafx.scene.layout.VBox; // Keep for other VBox uses or if needed by FXML elements
 
 import java.io.IOException;
 
-public class VueDuJeu extends VBox {
+public class VueDuJeu extends BorderPane { // Changed from VBox to BorderPane
 
     private IJeu jeu; // Keep this to pass to VueJoueurActif
     @FXML
