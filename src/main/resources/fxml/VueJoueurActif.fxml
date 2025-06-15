@@ -2,117 +2,72 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
 
-<!-- Root changed to BorderPane -->
-<fx:root type="javafx.scene.layout.BorderPane"
-         stylesheets="@../css/style.css"
-         styleClass="player-area"
-         xmlns:fx="http://javafx.com/fxml/1"
-         xmlns="http://javafx.com/javafx/11.0.1">
+<fx:root type="javafx.scene.layout.VBox"
+      xmlns:fx="http://javafx.com/fxml/1"
+      stylesheets="@../css/style.css"
+      styleClass="player-area"
+      spacing="10">
 
-    <left>
-        <VBox spacing="10" alignment="TOP_CENTER" styleClass="game-info-panel">
-            <BorderPane.margin>
-                <Insets right="10"/>
-            </BorderPane.margin>
-            <padding>
-                <Insets top="10" bottom="10" left="5" right="5"/>
-            </padding>
+    <Label fx:id="nomDuJoueurLabel" styleClass="text-18px"/>
+
+    <!-- Main HBox for Active Pokemon and Bench -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <!-- VBox for Active Pokemon -->
+        <VBox fx:id="pokemonActifVBox" spacing="5" alignment="CENTER_LEFT">
             <children>
-                <Label text="Pioche:" styleClass="text-14px-bold"/>
-                <ImageView fx:id="piocheJoueurActifImageView" fitWidth="45" fitHeight="63" preserveRatio="true"/>
-                <Label fx:id="piocheJoueurActifLabel" styleClass="text-12px"/>
-
-                <Label text="Récompenses:" styleClass="text-14px-bold">
-                    <VBox.margin><Insets top="10"/></VBox.margin>
-                </Label>
-                <ImageView fx:id="recompensesJoueurActifImageView" fitWidth="45" fitHeight="63" preserveRatio="true"/>
-                <Label fx:id="recompensesJoueurActifLabel" styleClass="text-12px"/>
-
-                <!-- Placeholder for Discard - not in VueJoueurActif.java FXML fields, but logically belongs here -->
-                <!-- <Label text="Défausse:" styleClass="text-14px-bold">
-                    <VBox.margin><Insets top="10"/></VBox.margin>
-                </Label>
-                <ImageView fx:id="defausseJoueurActifImageView" fitWidth="45" fitHeight="63" preserveRatio="true"/>
-                <Label fx:id="defausseJoueurActifLabel" styleClass="text-12px"/> -->
+                <Button fx:id="pokemonActifButton" styleClass="card-button text-18px" onAction="#onPokemonActifButtonClick"/>
+                <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER_LEFT"/>
             </children>
         </VBox>
-    </left>
 
-    <center>
-        <VBox spacing="10" styleClass="player-main-content-area">
-            <padding>
-                <Insets top="5" bottom="5" left="5" right="5"/>
-            </padding>
+        <!-- VBox for Bench -->
+        <VBox spacing="5" alignment="CENTER_LEFT">
             <children>
-                <Label fx:id="nomDuJoueurLabel" styleClass="text-18px-bold" alignment="CENTER" maxWidth="Infinity"/>
-
-                <!-- Main HBox for Active Pokemon and Bench -->
-                <HBox spacing="20" alignment="CENTER_LEFT" VBox.vgrow="NEVER">
-                    <!-- VBox for Active Pokemon -->
-                    <VBox fx:id="pokemonActifVBox" spacing="5" alignment="CENTER" HBox.hgrow="NEVER">
-                        <children>
-                            <Label text="Actif:" styleClass="text-14px-bold"/>
-                            <Button fx:id="pokemonActifButton" styleClass="card-button" onAction="#onPokemonActifButtonClick"/>
-                            <HBox fx:id="energiePokemonActifHBox" spacing="2" alignment="CENTER" minHeight="-Infinity"/>
-                        </children>
-                    </VBox>
-
-                    <!-- VBox for Bench -->
-                    <VBox spacing="5" alignment="TOP_LEFT" HBox.hgrow="ALWAYS">
-                        <children>
-                            <Label text="Banc:" styleClass="text-14px-bold"/>
-                            <ScrollPane fitToWidth="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" styleClass="bench-scroll-pane">
-                                 <HBox fx:id="panneauBancHBox" spacing="5" alignment="CENTER_LEFT" minHeight="100"/> <!-- Min height for bench cards visibility -->
-                            </ScrollPane>
-                        </children>
-                    </VBox>
-                </HBox>
-
-                <Label text="Attaques disponibles:" styleClass="text-14px-bold">
+                <Label text="Banc du joueur:" styleClass="text-14px">
                     <VBox.margin>
-                        <Insets top="5" bottom="2"/>
+                        <!-- Adjusted margin, original had Insets top="5". Now it's within a new VBox. -->
+                        <Insets top="0" bottom="2" left="0" right="0"/>
                     </VBox.margin>
                 </Label>
-                <!-- Wrap FlowPane in ScrollPane for many attacks -->
-                <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" VBox.vgrow="SOMETIMES" minHeight="50" prefHeight="80">
-                    <content>
-                        <FlowPane fx:id="attaquesPane" hgap="5" vgap="5" styleClass="attaques-pane" prefWrapLength="Infinity" alignment="TOP_LEFT"/>
-                    </content>
-                </ScrollPane>
-
-
-                <Label text="Main du joueur:" styleClass="text-14px-bold">
-                    <VBox.margin>
-                        <Insets top="5" bottom="2"/>
-                    </VBox.margin>
-                </Label>
-                <ScrollPane fx:id="mainScrollPane" fitToWidth="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" prefHeight="160" minHeight="100" VBox.vgrow="ALWAYS">
-                    <content>
-                        <HBox fx:id="panneauMainHBox" spacing="5" alignment="CENTER_LEFT"/>
-                    </content>
-                </ScrollPane>
-
-                <HBox fx:id="actionsPane" spacing="10" alignment="CENTER_LEFT" styleClass="actions-pane">
-                    <VBox.margin>
-                        <Insets top="10"/>
-                    </VBox.margin>
-                    <children>
-                        <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
-                        <Button fx:id="retreatButton" text="Battre en retraite" styleClass="text-18px"/>
-                        <Button fx:id="acceptTalentButton" text="Oui (Talent)" visible="false" managed="false" styleClass="text-18px"/>
-                        <Button fx:id="declineTalentButton" text="Non (Talent)" visible="false" managed="false" styleClass="text-18px"/>
-                    </children>
-                </HBox>
+                <HBox fx:id="panneauBancHBox" spacing="5" alignment="CENTER"/>
             </children>
         </VBox>
-    </center>
+    </HBox>
+
+    <Label text="Attaques disponibles:" styleClass="text-14px">
+        <VBox.margin>
+            <Insets top="10" bottom="2"/>
+        </VBox.margin>
+    </Label>
+    <FlowPane fx:id="attaquesPane" hgap="5" vgap="5" styleClass="attaques-pane" prefWrapLength="300">
+        <!-- Les boutons d'attaque seront ajoutés ici par le code Java -->
+        <VBox.margin>
+            <Insets bottom="10"/>
+        </VBox.margin>
+    </FlowPane>
+
+    <Label text="Main du joueur:" styleClass="text-14px">
+        <VBox.margin>
+            <Insets top="5" bottom="2"/>
+        </VBox.margin>
+    </Label>
+    <HBox fx:id="panneauMainHBox" spacing="5"/>
+
+    <HBox fx:id="actionsPane" spacing="10" alignment="CENTER_LEFT">
+        <children>
+            <Button fx:id="passerButton" text="Passer" onAction="#actionPasserParDefaut" styleClass="text-18px"/>
+            <Button fx:id="retreatButton" text="Battre en retraite" styleClass="text-18px"/>
+            <Button fx:id="acceptTalentButton" text="Oui (Talent)" visible="false" managed="false" styleClass="text-18px"/>
+            <Button fx:id="declineTalentButton" text="Non (Talent)" visible="false" managed="false" styleClass="text-18px"/>
+        </children>
+        <VBox.margin>
+            <Insets top="10"/>
+        </VBox.margin>
+    </HBox>
+
 </fx:root>

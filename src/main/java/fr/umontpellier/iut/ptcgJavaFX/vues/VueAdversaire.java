@@ -24,22 +24,21 @@ import javafx.event.ActionEvent; // Added import
 import javafx.scene.layout.HBox;
 // import javafx.scene.layout.Region; // For placeholders or card backs - ImageView will be used
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.BorderPane; // Added for BorderPane
 
 import java.io.IOException;
 import java.util.List; // For energieProperty value type
 import java.util.Map; // For iterating energy map
 
-public class VueAdversaire extends BorderPane { // Changed from VBox to BorderPane
+public class VueAdversaire extends VBox {
     private static final int MAX_BENCH_SLOTS = 5; // Matching VueJoueurActif
 
     // Constants for image sizes
-    private static final double LARGEUR_PKMN_ACTIF_ADV = 150;
-    private static final double HAUTEUR_PKMN_ACTIF_ADV = 225;
-    private static final double LARGEUR_PKMN_BANC_ADV = 100;
-    private static final double HAUTEUR_PKMN_BANC_ADV = 140;
-    private static final double LARGEUR_CARTE_MAIN_ADV = 150;
-    private static final double HAUTEUR_CARTE_MAIN_ADV = 225;
+    private static final double LARGEUR_PKMN_ACTIF_ADV = 75;
+    private static final double HAUTEUR_PKMN_ACTIF_ADV = 110;
+    private static final double LARGEUR_PKMN_BANC_ADV = 50;
+    private static final double HAUTEUR_PKMN_BANC_ADV = 70;
+    private static final double LARGEUR_CARTE_MAIN_ADV = 75;
+    private static final double HAUTEUR_CARTE_MAIN_ADV = 110;
     private static final double TAILLE_ICONE_ENERGIE_ADV = 18;
     private static final double LARGEUR_DOS_PETIT = 30;
     private static final double HAUTEUR_DOS_PETIT = 42;

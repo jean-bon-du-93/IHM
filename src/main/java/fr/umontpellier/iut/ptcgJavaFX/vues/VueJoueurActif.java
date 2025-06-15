@@ -24,7 +24,6 @@ import javafx.scene.image.ImageView; // Added for image display
 import javafx.scene.layout.FlowPane; // Added for attaquesPane
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.BorderPane; // Added for BorderPane
 import javafx.scene.Node; // Added for mettreAJourStyleSelectionPokemon
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.Carte; // Added for mettreAJourStyleSelectionPokemon
 import fr.umontpellier.iut.ptcgJavaFX.mecanique.cartes.pokemon.Attaque; // Added for attaques
@@ -37,17 +36,17 @@ import java.util.HashMap; // Added for new Maps
 import java.util.List; // Added for type in MapChangeListener
 import java.util.Map; // Added for new Maps
 
-public class VueJoueurActif extends BorderPane { // Changed from VBox to BorderPane
+public class VueJoueurActif extends VBox {
 
     private static final int MAX_BENCH_SLOTS = 5; // Added constant
 
     // Constants for image sizes
-    private static final double LARGEUR_CARTE_MAIN = 150;
-    private static final double HAUTEUR_CARTE_MAIN = 225;
-    private static final double LARGEUR_PKMN_ACTIF = 150;
-    private static final double HAUTEUR_PKMN_ACTIF = 225;
-    private static final double LARGEUR_PKMN_BANC = 100;
-    private static final double HAUTEUR_PKMN_BANC = 140;
+    private static final double LARGEUR_CARTE_MAIN = 75;
+    private static final double HAUTEUR_CARTE_MAIN = 110;
+    private static final double LARGEUR_PKMN_ACTIF = 75;
+    private static final double HAUTEUR_PKMN_ACTIF = 110;
+    private static final double LARGEUR_PKMN_BANC = 50;
+    private static final double HAUTEUR_PKMN_BANC = 70;
     private static final double TAILLE_ICONE_ENERGIE = 18;
     private static final double LARGEUR_DOS_PIOCHE_RECOMPENSE = 45;
     private static final double HAUTEUR_DOS_PIOCHE_RECOMPENSE = 63;
@@ -483,9 +482,9 @@ public class VueJoueurActif extends BorderPane { // Changed from VBox to BorderP
                     weaknessLabel.setId("weaknessLabelActif");
                     weaknessLabel.getStyleClass().add("hp-label"); // Using same style for now
                     if (faiblesseType != null) {
-                        weaknessLabel.setText("Weakness: " + faiblesseType.name());
+                        weaknessLabel.setText("Faiblesse: " + faiblesseType.name());
                     } else {
-                        weaknessLabel.setText("Weakness: None");
+                        weaknessLabel.setText("Faiblesse: None");
                     }
                     pokemonActifVBox.getChildren().add(weaknessLabel);
 
@@ -506,7 +505,7 @@ public class VueJoueurActif extends BorderPane { // Changed from VBox to BorderP
                     Label retreatLabel = new Label();
                     retreatLabel.setId("retreatLabelActif");
                     retreatLabel.getStyleClass().add("hp-label"); // Using same style for now
-                    retreatLabel.setText("Retreat: " + retreatCost);
+                    retreatLabel.setText("Retraite: " + retreatCost);
                     pokemonActifVBox.getChildren().add(retreatLabel);
 
                     // Status Conditions Display

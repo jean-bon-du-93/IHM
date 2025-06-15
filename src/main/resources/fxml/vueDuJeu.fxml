@@ -3,30 +3,19 @@
 <?import fr.umontpellier.iut.ptcgJavaFX.vues.VueJoueurActif?>
 <?import fr.umontpellier.iut.ptcgJavaFX.vues.VueAdversaire?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.BorderPane?> <!-- Changed from VBox -->
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<!-- Root is now BorderPane -->
-<fx:root type="javafx.scene.layout.BorderPane"
-         stylesheets="@../css/style.css"
-         styleClass="game-view-root-padding"
-         xmlns:fx="http://javafx.com/fxml/1"
-         xmlns="http://javafx.com/javafx/11.0.1">
+<fx:root type="javafx.scene.layout.VBox"
+      spacing="15"
+      stylesheets="@../css/style.css"
+      styleClass="game-view-root-padding"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/11.0.1">
 
-    <top>
-        <!-- VueAdversaire is placed in the TOP region -->
-        <VueAdversaire fx:id="vueAdversaire" />
-    </top>
-
-    <center>
-        <!-- instructionLabel is placed in the CENTER region -->
-        <!-- To make it more visible and constrained, wrap it in a container if needed, -->
-        <!-- or style it directly. For now, direct placement. -->
-        <Label fx:id="instructionLabel" styleClass="instruction-area" alignment="CENTER" maxWidth="Infinity"/>
-    </center>
-
-    <bottom>
-        <!-- VueJoueurActif is placed in the BOTTOM region -->
-        <VueJoueurActif fx:id="panneauDuJoueurActif" />
-    </bottom>
+    <Label fx:id="instructionLabel" styleClass="instruction-area"/>
+    <!-- HBox removed, VueJoueurActif and VueAdversaire are now direct children of the root VBox -->
+    <VueJoueurActif fx:id="panneauDuJoueurActif" VBox.vgrow="ALWAYS"/>
+    <VueAdversaire fx:id="vueAdversaire" VBox.vgrow="ALWAYS"/>
 
 </fx:root>
