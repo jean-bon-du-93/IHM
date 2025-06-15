@@ -482,9 +482,9 @@ public class VueJoueurActif extends VBox {
                     weaknessLabel.setId("weaknessLabelActif");
                     weaknessLabel.getStyleClass().add("hp-label"); // Using same style for now
                     if (faiblesseType != null) {
-                        weaknessLabel.setText("Weakness: " + faiblesseType.name());
+                        weaknessLabel.setText("Faiblesse: " + faiblesseType.name());
                     } else {
-                        weaknessLabel.setText("Weakness: None");
+                        weaknessLabel.setText("Faiblesse: None");
                     }
                     pokemonActifVBox.getChildren().add(weaknessLabel);
 
@@ -505,7 +505,7 @@ public class VueJoueurActif extends VBox {
                     Label retreatLabel = new Label();
                     retreatLabel.setId("retreatLabelActif");
                     retreatLabel.getStyleClass().add("hp-label"); // Using same style for now
-                    retreatLabel.setText("Retreat: " + retreatCost);
+                    retreatLabel.setText("Retraite: " + retreatCost);
                     pokemonActifVBox.getChildren().add(retreatLabel);
 
                     // Status Conditions Display
